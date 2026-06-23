@@ -1,10 +1,10 @@
 import mujoco
 from mujoco import MjSpec
 
-from .unitreeG1_inspire import UnitreeG1Inspire
+from .unitreeG1_ball_inspire import UnitreeG1BallInspire
 
 
-class MjxUnitreeG1Inspire(UnitreeG1Inspire):
+class MjxUnitreeG1BallInspire(UnitreeG1BallInspire):
 
     mjx_enabled = True
 
