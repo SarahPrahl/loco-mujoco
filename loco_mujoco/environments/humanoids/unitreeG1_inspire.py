@@ -24,7 +24,7 @@ class UnitreeG1Inspire(BaseRobotHumanoid):
     ============ ============================= ================ ==================================== ============================== ===
     Index in Obs Name                          ObservationType  Min                                  Max                            Dim
     ============ ============================= ================ ==================================== ============================== ===
-    0 - 6        q_root                        FreeJointPosXY   [-inf, -inf, -inf, -inf, -inf]       [inf, inf, inf, inf, inf]      7
+    0 - 6        q_root                        FreeJointPos     [-inf, -inf, -inf, -inf, -inf]       [inf, inf, inf, inf, inf]      7
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
     7            q_left_hip_pitch_joint        JointPos         -2.5307                              2.8798                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
@@ -131,6 +131,114 @@ class UnitreeG1Inspire(BaseRobotHumanoid):
     58           q_right_little_1_joint        JointPos         0                                    1.4381                         1
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
     59           q_right_little_2_joint        JointPos         0                                    3.14                           1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    60 - 65      dq_root                       FreeJointVel     [-inf, -inf, -inf, -inf, -inf]       [inf, inf, inf, inf, inf]      6
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    66           dq_left_hip_pitch_joint       JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    67           dq_left_hip_roll_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    68           dq_left_hip_yaw_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    69           dq_left_knee_joint            JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    70          dq_left_ankle_pitch_joint      JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    71           dq_left_ankle_roll_joint      JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    72           dq_right_hip_pitch_joint      JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    73           dq_right_hip_roll_joint       JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    74           dq_right_hip_yaw_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    75           dq_right_knee_joint           JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    78           dq_right_ankle_pitch_joint    JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    79           dq_right_ankle_roll_joint     JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    80           dq_waist_yaw_joint            JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    81           dq_waist_roll_joint           JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    82           dq_waist_pitch_joint          JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    83           dq_left_shoulder_pitch_joint  JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    84           dq_left_shoulder_roll_joint   JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    85           dq_left_shoulder_yaw_joint    JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    86           dq_left_elbow_joint           JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    87           dq_left_wrist_roll_joint      JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    88           dq_left_wrist_pitch_joint     JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    89           dq_left_wrist_yaw_joint       JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    90           dq_left_thumb_1_joint         JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    91           dq_left_thumb_2_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    92           dq_left_thumb_3_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    93           dq_left_thumb_4_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    94           dq_left_index_1_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    95           dq_left_index_2_joint         JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    96           dq_left_middle_1_joint        JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    97           dq_left_middle_2_joint        JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    98           dq_left_ring_1_joint          JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    99           dq_left_ring_2_joint          JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    100          dq_left_little_1_joint        JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    101          dq_left_little_2_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    102          dq_right_shoulder_pitch_joint JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    103          dq_right_shoulder_roll_joint  JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    104          dq_right_shoulder_yaw_joint   JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    105          dq_right_elbow_joint          JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    106          dq_right_wrist_roll_joint     JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    107          dq_right_wrist_pitch_joint    JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    108          dq_right_wrist_yaw_joint      JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    109          dq_right_thumb_1_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    110          dq_right_thumb_2_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    111          dq_right_thumb_3_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    112          dq_right_thumb_4_joint        JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    113          dq_right_index_1_joint        JointVel         -inf                                 inf                            1 
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    114          dq_right_index_2_joint        JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    115          dq_right_middle_1_joint       JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    116          dq_right_middle_2_joint       JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    117          dq_right_ring_1_joint         JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    118          dq_right_ring_2_joint         JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    119          dq_right_little_1_joint       JointVel         -inf                                 inf                            1
+    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
+    120          dq_right_little_2_joint       JointVel         -inf                                 inf                            1
     ============ ============================= ================ ==================================== ============================== ===
 
     Default Action Space
@@ -425,30 +533,63 @@ class UnitreeG1Inspire(BaseRobotHumanoid):
                             ObservationType.JointPos("q_right_little_2_joint", xml_name="right_little_2_joint"),
 
                             # # ------------- JOINT VEL -------------
-                            # ObservationType.FreeJointVel("dq_root", xml_name="root"),
-                            # ObservationType.JointVel("dq_left_hip_pitch_joint", xml_name="left_hip_pitch_joint"),
-                            # ObservationType.JointVel("dq_left_hip_roll_joint", xml_name="left_hip_roll_joint"),
-                            # ObservationType.JointVel("dq_left_hip_yaw_joint", xml_name="left_hip_yaw_joint"),
-                            # ObservationType.JointVel("dq_left_knee_joint", xml_name="left_knee_joint"),
-                            # ObservationType.JointVel("dq_left_ankle_pitch_joint", xml_name="left_ankle_pitch_joint"),
-                            # ObservationType.JointVel("dq_left_ankle_roll_joint", xml_name="left_ankle_roll_joint"),
-                            # ObservationType.JointVel("dq_right_hip_pitch_joint", xml_name="right_hip_pitch_joint"),
-                            # ObservationType.JointVel("dq_right_hip_roll_joint", xml_name="right_hip_roll_joint"),
-                            # ObservationType.JointVel("dq_right_hip_yaw_joint", xml_name="right_hip_yaw_joint"),
-                            # ObservationType.JointVel("dq_right_knee_joint", xml_name="right_knee_joint"),
-                            # ObservationType.JointVel("dq_right_ankle_pitch_joint", xml_name="right_ankle_pitch_joint"),
-                            # ObservationType.JointVel("dq_right_ankle_roll_joint", xml_name="right_ankle_roll_joint"),
-                            # ObservationType.JointVel("dq_waist_yaw_joint", xml_name="waist_yaw_joint"),
-                            # ObservationType.JointVel("dq_left_shoulder_pitch_joint", xml_name="left_shoulder_pitch_joint"),
-                            # ObservationType.JointVel("dq_left_shoulder_roll_joint", xml_name="left_shoulder_roll_joint"),
-                            # ObservationType.JointVel("dq_left_shoulder_yaw_joint", xml_name="left_shoulder_yaw_joint"),
-                            # ObservationType.JointVel("dq_left_elbow_joint", xml_name="left_elbow_joint"),
-                            # ObservationType.JointVel("dq_left_wrist_roll_joint", xml_name="left_wrist_roll_joint"),
-                            # ObservationType.JointVel("dq_right_shoulder_pitch_joint", xml_name="right_shoulder_pitch_joint"),
-                            # ObservationType.JointVel("dq_right_shoulder_roll_joint", xml_name="right_shoulder_roll_joint"),
-                            # ObservationType.JointVel("dq_right_shoulder_yaw_joint", xml_name="right_shoulder_yaw_joint"),
-                            # ObservationType.JointVel("dq_right_elbow_joint", xml_name="right_elbow_joint"),
-                            # ObservationType.JointVel("dq_right_wrist_roll_joint", xml_name="right_wrist_roll_joint"),
+                            ObservationType.FreeJointVel("dq_root", xml_name="root"),
+                            ObservationType.JointVel("dq_left_hip_pitch_joint", xml_name="left_hip_pitch_joint"),
+                            ObservationType.JointVel("dq_left_hip_roll_joint", xml_name="left_hip_roll_joint"),
+                            ObservationType.JointVel("dq_left_hip_yaw_joint", xml_name="left_hip_yaw_joint"),
+                            ObservationType.JointVel("dq_left_knee_joint", xml_name="left_knee_joint"),
+                            ObservationType.JointVel("dq_left_ankle_pitch_joint", xml_name="left_ankle_pitch_joint"),
+                            ObservationType.JointVel("dq_left_ankle_roll_joint", xml_name="left_ankle_roll_joint"),
+                            ObservationType.JointVel("dq_right_hip_pitch_joint", xml_name="right_hip_pitch_joint"),
+                            ObservationType.JointVel("dq_right_hip_roll_joint", xml_name="right_hip_roll_joint"),
+                            ObservationType.JointVel("dq_right_hip_yaw_joint", xml_name="right_hip_yaw_joint"),
+                            ObservationType.JointVel("dq_right_knee_joint", xml_name="right_knee_joint"),
+                            ObservationType.JointVel("dq_right_ankle_pitch_joint", xml_name="right_ankle_pitch_joint"),
+                            ObservationType.JointVel("dq_right_ankle_roll_joint", xml_name="right_ankle_roll_joint"),
+                            ObservationType.JointVel("dq_waist_yaw_joint", xml_name="waist_yaw_joint"),
+                            ObservationType.JointVel("dq_waist_roll_joint", xml_name="waist_roll_joint"),
+                            ObservationType.JointVel("dq_waist_pitch_joint", xml_name="waist_pitch_joint"),
+                            ObservationType.JointVel("dq_left_shoulder_pitch_joint", xml_name="left_shoulder_pitch_joint"),
+                            ObservationType.JointVel("dq_left_shoulder_roll_joint", xml_name="left_shoulder_roll_joint"),
+                            ObservationType.JointVel("dq_left_shoulder_yaw_joint", xml_name="left_shoulder_yaw_joint"),
+                            ObservationType.JointVel("dq_left_elbow_joint", xml_name="left_elbow_joint"),
+                            ObservationType.JointVel("dq_left_wrist_roll_joint", xml_name="left_wrist_roll_joint"),
+
+                            ObservationType.JointVel("dq_left_wrist_pitch_joint", xml_name="left_wrist_pitch_joint"),
+                            ObservationType.JointVel("dq_left_wrist_yaw_joint", xml_name="left_wrist_yaw_joint"),
+                            ObservationType.JointVel("dq_left_thumb_1_joint", xml_name="left_thumb_1_joint"),
+                            ObservationType.JointVel("dq_left_thumb_2_joint", xml_name="left_thumb_2_joint"),
+                            ObservationType.JointVel("dq_left_thumb_3_joint", xml_name="left_thumb_3_joint"),
+                            ObservationType.JointVel("dq_left_thumb_4_joint", xml_name="left_thumb_4_joint"),
+                            ObservationType.JointVel("dq_left_index_1_joint", xml_name="left_index_1_joint"),
+                            ObservationType.JointVel("dq_left_index_2_joint", xml_name="left_index_2_joint"),
+                            ObservationType.JointVel("dq_left_middle_1_joint", xml_name="left_middle_1_joint"),
+                            ObservationType.JointVel("dq_left_middle_2_joint", xml_name="left_middle_2_joint"),
+                            ObservationType.JointVel("dq_left_ring_1_joint", xml_name="left_ring_1_joint"),
+                            ObservationType.JointVel("dq_left_ring_2_joint", xml_name="left_ring_2_joint"),
+                            ObservationType.JointVel("dq_left_little_1_joint", xml_name="left_little_1_joint"),
+                            ObservationType.JointVel("dq_left_little_2_joint", xml_name="left_little_2_joint"),
+
+                            ObservationType.JointVel("dq_right_shoulder_pitch_joint", xml_name="right_shoulder_pitch_joint"),
+                            ObservationType.JointVel("dq_right_shoulder_roll_joint", xml_name="right_shoulder_roll_joint"),
+                            ObservationType.JointVel("dq_right_shoulder_yaw_joint", xml_name="right_shoulder_yaw_joint"),
+                            ObservationType.JointVel("dq_right_elbow_joint", xml_name="right_elbow_joint"),
+                            ObservationType.JointVel("dq_right_wrist_roll_joint", xml_name="right_wrist_roll_joint"),
+
+                            ObservationType.JointVel("dq_right_wrist_pitch_joint", xml_name="right_wrist_pitch_joint"),
+                            ObservationType.JointVel("dq_right_wrist_yaw_joint", xml_name="right_wrist_yaw_joint"),
+                            ObservationType.JointVel("dq_right_thumb_1_joint", xml_name="right_thumb_1_joint"),
+                            ObservationType.JointVel("dq_right_thumb_2_joint", xml_name="right_thumb_2_joint"),
+                            ObservationType.JointVel("dq_right_thumb_3_joint", xml_name="right_thumb_3_joint"),
+                            ObservationType.JointVel("dq_right_thumb_4_joint", xml_name="right_thumb_4_joint"),
+                            ObservationType.JointVel("dq_right_index_1_joint", xml_name="right_index_1_joint"),
+                            ObservationType.JointVel("dq_right_index_2_joint", xml_name="right_index_2_joint"),
+                            ObservationType.JointVel("dq_right_middle_1_joint", xml_name="right_middle_1_joint"),
+                            ObservationType.JointVel("dq_right_middle_2_joint", xml_name="right_middle_2_joint"),
+                            ObservationType.JointVel("dq_right_ring_1_joint", xml_name="right_ring_1_joint"),
+                            ObservationType.JointVel("dq_right_ring_2_joint", xml_name="right_ring_2_joint"),
+                            ObservationType.JointVel("dq_right_little_1_joint", xml_name="right_little_1_joint"),
+                            ObservationType.JointVel("dq_right_little_2_joint", xml_name="right_little_2_joint"),
                             ]
 
         return observation_spec
