@@ -124,6 +124,8 @@ class ImitationFactory(TaskFactory):
             env_name = env_name.replace("Inspire", "")
         if "Ball" in env_name:
             env_name = env_name.replace("Ball", "")
+        if "Reduced" in env_name:
+            env_name = env_name.replace("Reduced", "")
 
         if isinstance(default_dataset_conf.task, str):
             default_dataset_conf.task = [default_dataset_conf.task]
@@ -259,6 +261,8 @@ class ImitationFactory(TaskFactory):
             env_name = env_name.replace("Inspire", "")
         if "Ball" in env_name:
             env_name = env_name.replace("Ball", "")
+        if "Reduced" in env_name:
+            env_name = env_name.replace("Reduced", "")
 
         # Load LAFAN1 Trajectory
         traj = load_lafan1_trajectory(env_name, dataset_paths)
@@ -289,6 +293,8 @@ class ImitationFactory(TaskFactory):
             env_name = env_name.replace("Inspire", "")
         if "Ball" in env_name:
             env_name = env_name.replace("Ball", "")
+        if "Reduced" in env_name:
+            env_name = env_name.replace("Reduced", "")
         
         trajs = []
         # load each trajectory from the provided paths and concatenate them
