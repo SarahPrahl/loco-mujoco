@@ -568,8 +568,9 @@ class LocoEnv(Mjx):
         traj_data_init = self.th.traj.data.get(traj_state.traj_no, traj_state.subtraj_step_no_init, np)
         # subtract the initial state from the current state
         traj_data.qpos[robot_free_jnt_qpos_id_xy] -= traj_data_init.qpos[robot_free_jnt_qpos_id_xy]
-        # correct the additional free joint qpos to keep the ball in the same position
-        traj_data.qpos[additional_free_jnt_qpos_id_xy] -= traj_data_init.qpos[robot_free_jnt_qpos_id_xy]
+        if len(additional_free_jnt_qpos_id_xy) > 0:
+            # correct the additional free joint qpos to keep the ball in the same position
+            traj_data.qpos[additional_free_jnt_qpos_id_xy] -= traj_data_init.qpos[robot_free_jnt_qpos_id_xy]
         # print("Current Ball position: ", traj_data.qpos[60:66])
         return Mjx.set_sim_state_from_traj_data(data, traj_data, carry)
 
@@ -588,12 +589,18 @@ class LocoEnv(Mjx):
         robot_free_jnt_name = self.root_free_joint_xml_name
         robot_free_jnt_qpos_id_xy = np.array(mj_jntname2qposid(robot_free_jnt_name, self._model))[:2]
         all_free_jnt_qpos_id_xy = self.free_jnt_qpos_id[:, :2].reshape(-1)
+        # get all none robot free joint qpos ids
+        additional_free_jnt_qpos_id_xy = np.array([id for id in all_free_jnt_qpos_id_xy if id not in robot_free_jnt_qpos_id_xy])
         traj_state = carry.traj_state
         # get the initial state of the current trajectory
         traj_data_init = self.th.traj.data.get(traj_state.traj_no, traj_state.subtraj_step_no_init, jnp)
         # subtract the initial state from the current state
         traj_data = traj_data.replace(
-            qpos=traj_data.qpos.at[all_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[all_free_jnt_qpos_id_xy]))
+            qpos=traj_data.qpos.at[robot_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
+        if len(additional_free_jnt_qpos_id_xy) > 0:
+            # correct the additional free joint qpos to keep the ball in the same position
+            traj_data = traj_data.replace(
+                qpos=traj_data.qpos.at[additional_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
         return Mjx.mjx_set_sim_state_from_traj_data(data, traj_data, carry)
 
     def _init_additional_carry(self,

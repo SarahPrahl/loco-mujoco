@@ -25,7 +25,7 @@ experiment:
     params:
       custom_dataset_conf:
         paths:
-          - /home/sarah/pg/mujoco/mocap_data/throw_ball.npz
+          - /home/sarah/pg/mujoco/mocap_data/npz/40_merged_filtered.npz
   env_params:
     env_name: MjxUnitreeG1Inspire
     # disable_arms: True
@@ -48,14 +48,24 @@ experiment:
       sites_for_mimic:
         - upper_body_mimic
         - left_hand_mimic
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
         - left_foot_mimic
         - right_hand_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
         - right_foot_mimic
   hidden_layers: [512, 256]
   lr: 1e-4
   num_envs: 2048
   num_steps: 200
-  total_timesteps: 600e6
+  total_timesteps: 300e6
   update_epochs: 4
   proportion_env_reward: 0.0
   num_minibatches: 32
@@ -97,6 +107,7 @@ experiment:
       - right_hand_mimic
       - right_foot_mimic
     joints_to_ignore:
+      - ball_joint
       - pelvis_tx
       - pelvis_tz
       - pelvis_ty
