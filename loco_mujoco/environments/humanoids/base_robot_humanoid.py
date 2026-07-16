@@ -20,8 +20,12 @@ class BaseRobotHumanoid(LocoEnv):
         """
         return ["upper_body_mimic", "head_mimic", "pelvis_mimic",
                 "left_shoulder_mimic", "left_elbow_mimic", "left_hand_mimic",
+                "left_thumb_mimic", "left_index_mimic", "left_middle_mimic",
+                "left_ring_mimic", "left_little_mimic",
                 "left_hip_mimic", "left_knee_mimic", "left_foot_mimic",
                 "right_shoulder_mimic", "right_elbow_mimic", "right_hand_mimic",
+                "right_thumb_mimic", "right_index_mimic", "right_middle_mimic",
+                "right_ring_mimic", "right_little_mimic",
                 "right_hip_mimic", "right_knee_mimic", "right_foot_mimic"]
 
     @info_property

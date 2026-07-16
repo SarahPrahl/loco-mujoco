@@ -9,8 +9,16 @@ from .unitreeH1v2_mjx import MjxUnitreeH1v2
 from .unitreeG1 import UnitreeG1
 from .unitreeG1_inspire import UnitreeG1Inspire
 from .unitreeG1_inspire_mjx import MjxUnitreeG1Inspire
+from .unitreeG1_29 import UnitreeG129
+from .unitreeG1_29_mjx import MjxUnitreeG129
+from .unitreeG1_percent import UnitreeG1Percent
+from .unitreeG1_percent_mjx import MjxUnitreeG1Percent
 from .unitreeG1_ball_inspire import UnitreeG1BallInspire
 from .unitreeG1_ball_inspire_mjx import MjxUnitreeG1BallInspire
+from .unitreeG1_29_ball import UnitreeG1Ball29
+from .unitreeG1_29_ball_mjx import MjxUnitreeG1Ball29
+from .unitreeG1_ball_percent import UnitreeG1BallPercent
+from .unitreeG1_ball_percent_mjx import MjxUnitreeG1BallPercent
 from .myoskeleton import MyoSkeleton
 from .myoskeleton_mjx import MjxMyoSkeleton
 from .unitreeG1_mjx import MjxUnitreeG1
@@ -38,9 +46,17 @@ MjxUnitreeH1v2.register()
 UnitreeG1.register()
 UnitreeG1Inspire.register()
 UnitreeG1BallInspire.register()
+UnitreeG129.register()
+UnitreeG1Ball29.register()
+UnitreeG1Percent.register()
+UnitreeG1BallPercent.register()
 MjxUnitreeG1.register()
 MjxUnitreeG1Inspire.register()
 MjxUnitreeG1BallInspire.register()
+MjxUnitreeG129.register()
+MjxUnitreeG1Ball29.register()
+MjxUnitreeG1Percent.register()
+MjxUnitreeG1BallPercent.register()
 Apollo.register()
 MjxApollo.register()
 BoosterT1.register()
