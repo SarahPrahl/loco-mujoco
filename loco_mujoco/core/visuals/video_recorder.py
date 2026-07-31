@@ -94,8 +94,8 @@ class VideoRecorder(object):
                 os.replace(tmp_file, self._video_writer_path)
                 print("Successfully compressed recorded video and saved at: ", self._video_writer_path)
 
-            except (subprocess.CalledProcessError, OSError) as e:
-                print(f"Video compression failed (video is saved uncompressed): {e}")
+            except subprocess.CalledProcessError as e:
+                print(f"Video compression failed: {e}")
 
         self._video_writer = None
 
