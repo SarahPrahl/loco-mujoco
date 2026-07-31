@@ -25,7 +25,7 @@ factory = TaskFactory.get_factory_cls(config.experiment.task_factory.name)
 
 # create env
 OmegaConf.set_struct(config, False)  # Allow modifications
-config.experiment.env_params["headless"] = False
+config.experiment.env_params["headless"] = True
 config.experiment.env_params["goal_type"] = "GoalTrajMimicv2"   # nicer looking than GoalTrajMimic
 env = factory.make(**config.experiment.env_params, **config.experiment.task_factory.params)
 
