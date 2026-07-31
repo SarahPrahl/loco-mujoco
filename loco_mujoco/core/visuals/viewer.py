@@ -29,11 +29,17 @@ def _import_osmesa(width, height):
     return GLContext(width, height)
 
 
+# Order matters: PyOpenGL only supports one platform per process. The first
+# OpenGL-based backend that is imported claims the process for its platform
+# (it sets PYOPENGL_PLATFORM accordingly), so any later backend import fails.
+# OSMesa (software rendering) therefore has to be tried before EGL, otherwise a
+# broken EGL attempt would permanently block the OSMesa fallback. Prefer EGL on
+# headless GPU machines by setting MUJOCO_GL=egl explicitly.
 _ALL_RENDERERS = collections.OrderedDict(
     [
         ("glfw", _import_glfw),
-        ("egl", _import_egl),
         ("osmesa", _import_osmesa),
+        ("egl", _import_egl),
     ]
 )
 
@@ -839,6 +845,16 @@ class MujocoViewer:
                     follow=dict(distance=3.5, elevation=0.0, azimuth=90.0),
                     top_static=dict(distance=5.0, elevation=-90.0, azimuth=90.0, lookat=np.array([0.0, 0.0, 0.0])))
 
+    @staticmethod
+    def _opengl_context_is_usable():
+        try:
+            dummy_model = mujoco.MjModel.from_xml_string(
+                "<mujoco><worldbody><geom size=\"0.1\"/></worldbody></mujoco>")
+            mujoco.MjrContext(dummy_model, mujoco.mjtFontScale(100))
+        except Exception:
+            return False
+        return True
+
     def setup_opengl_backend_headless(self, width, height):
 
         backend = os.environ.get("MUJOCO_GL")
@@ -851,16 +867,43 @@ class MujocoViewer:
                         "MUJOCO_GL", _ALL_RENDERERS.keys(), backend
                     )
                 )
+            opengl_context.make_current()
+            if not self._opengl_context_is_usable():
+                raise RuntimeError(
+                    "OpenGL backend '{}' created a context, but it is not usable "
+                    "(gladLoadGL failed). Try setting MUJOCO_GL=osmesa for software "
+                    "rendering.".format(backend)
+                )
 
         else:
             # iterate through all OpenGL backends to see which one is available
             for name, _ in _ALL_RENDERERS.items():
+                if name == "glfw" and not os.environ.get("DISPLAY") \
+                        and not os.environ.get("WAYLAND_DISPLAY"):
+                    # glfw needs a display server. Apart from being guaranteed to
+                    # fail, the failed attempt would poison the process for the
+                    # OSMesa software renderer (PyOpenGL/GL library loading side
+                    # effects), so skip it entirely.
+                    continue
+                opengl_context = None
                 try:
                     opengl_context = _ALL_RENDERERS[name](width, height)
+                    opengl_context.make_current()
+                    if not self._opengl_context_is_usable():
+                        raise RuntimeError("created context is not usable")
                     backend = name
                     break
-                except:  # noqa:E722
-                    pass
+                except Exception:
+                    if opengl_context is not None:
+                        try:
+                            opengl_context.free()
+                        except Exception:
+                            pass
+                        try:
+                            # prevent a noisy __del__ on the broken context
+                            opengl_context._context = None
+                        except Exception:
+                            pass
             if backend is None:
                 raise RuntimeError(
                     "No OpenGL backend could be imported. Attempting to create a "

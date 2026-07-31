@@ -35,12 +35,16 @@ class MjxUnitreeG1Inspire(UnitreeG1Inspire):
         foot_geoms = ["right_foot_1_col", "right_foot_2_col", "right_foot_3_col", "right_foot_4_col",
                       "left_foot_1_col", "left_foot_2_col", "left_foot_3_col", "left_foot_4_col"]
 
-        # --- Make all geoms have contype and conaffinity of 0 ---
+        body_keep_meshes = ["pelvis_contour_link", "torso_link", "head_link"]
+
+        # --- Disable all auto-collision except for key body geoms ---
         for g in spec.geoms:
+            if g.meshname in body_keep_meshes:
+                continue
             g.contype = 0
             g.conaffinity = 0
 
-        # --- Define specific contact pairs ---
+        # --- Define specific contact pairs for feet ---
         for g_name in foot_geoms:
             spec.add_pair(geomname1="floor", geomname2=g_name)
 

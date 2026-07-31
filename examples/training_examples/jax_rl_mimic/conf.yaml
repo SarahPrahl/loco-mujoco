@@ -25,16 +25,16 @@ experiment:
     params:
       custom_dataset_conf:
         paths:
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/1_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/2_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/3_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/4_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/5_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/6_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/7_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/8_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/9_merged_filtered.npz
-          - /home/andy/projectgruppe-hreact/mujoco/mocap_data/npz/06_07_2026/10_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/1_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/2_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/3_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/4_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/5_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/6_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/7_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/8_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/9_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/06_07_2026/10_merged_filtered.npz
   env_params:
     env_name: MjxUnitreeG1Inspire
     # disable_arms: True
@@ -42,7 +42,10 @@ experiment:
     nconmax: 16000
     headless: True
     horizon: 1000
-    terminal_state_type: NoTerminalStateHandler
+    terminal_state_type: RootPoseTrajTerminalStateHandler
+    terminal_state_params:
+      root_height_margin: 0.35
+      root_rot_margin_degrees: 45.0
     # goal_type: GoalTrajMimic  ### Problem!!! Increases the observation space from 60 to 513. Issues with conversion to SB3 model.
     # goal_params:
     #   visualize_goal: true
