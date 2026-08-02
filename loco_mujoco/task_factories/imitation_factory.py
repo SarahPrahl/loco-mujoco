@@ -120,10 +120,6 @@ class ImitationFactory(TaskFactory):
         env_name = env.__class__.__name__
         if "Mjx" in env_name:
             env_name = env_name.replace("Mjx", "")
-        if "Inspire" in env_name:
-            env_name = env_name.replace("Inspire", "")
-        if "Ball" in env_name:
-            env_name = env_name.replace("Ball", "")
 
         if isinstance(default_dataset_conf.task, str):
             default_dataset_conf.task = [default_dataset_conf.task]
@@ -255,10 +251,8 @@ class ImitationFactory(TaskFactory):
                 else [lafan1_dataset_conf.dataset_name]
             
         env_name = env.__class__.__name__
-        if "Inspire" in env_name:
-            env_name = env_name.replace("Inspire", "")
-        if "Ball" in env_name:
-            env_name = env_name.replace("Ball", "")
+        if "Mjx" in env_name:
+            env_name = env_name.replace("Mjx", "")
 
         # Load LAFAN1 Trajectory
         traj = load_lafan1_trajectory(env_name, dataset_paths)
@@ -285,11 +279,7 @@ class ImitationFactory(TaskFactory):
         env_name = env.__class__.__name__
         if "Mjx" in env_name:
             env_name = env_name.replace("Mjx", "")
-        if "Inspire" in env_name:
-            env_name = env_name.replace("Inspire", "")
-        if "Ball" in env_name:
-            env_name = env_name.replace("Ball", "")
-        
+
         trajs = []
         # load each trajectory from the provided paths and concatenate them
         for file_path in custom_dataset_conf.paths:
