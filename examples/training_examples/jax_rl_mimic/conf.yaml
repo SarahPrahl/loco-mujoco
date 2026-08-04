@@ -25,7 +25,7 @@ experiment:
     params:
       custom_dataset_conf:
         paths:
-          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026/1_merged_filtered.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026/2_merged_filtered.npz
   env_params:
     env_name: MjxUnitreeG1Inspire
     use_mjwarp: True
