@@ -376,7 +376,7 @@ class UnitreeG1Ball29(BaseRobotHumanoid):
         """
         Returns the default XML file path for the Unitree G1 environment.
         """
-        xml_file = "robot_models/scene_g1_29_ball.xml"
+        xml_file = "robot_models_new/scene_rubber_hand_ball.xml"
         model_path = os.path.join(os.getcwd().removesuffix("/loco-mujoco/loco_mujoco/environments/humanoids"), xml_file)
         return model_path
 

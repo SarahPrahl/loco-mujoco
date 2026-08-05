@@ -483,7 +483,7 @@ class UnitreeG1Percent(BaseRobotHumanoid):
         """
         Returns the default XML file path for the Unitree G1 environment.
         """
-        xml_file = "robot_models/scene_inspire_percent.xml"
+        xml_file = "robot_models_new/scene_percent_hand.xml"
         model_path = os.path.join(os.getcwd().removesuffix("/loco-mujoco/loco_mujoco/environments/humanoids"), xml_file)
         return model_path
 
