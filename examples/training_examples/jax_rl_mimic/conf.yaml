@@ -25,11 +25,11 @@ experiment:
     params:
       custom_dataset_conf:
         paths:
-          - /home/andy/work/gitlab/mujoco/mocap_data/stand_g1_robot.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/2_merged_filtered.npz
   env_params:
     env_name: MjxUnitreeG1Inspire
     use_mjwarp: True
-    nconmax: 7000
+    nconmax: 32000
     headless: True
     horizon: 3000
     terminal_state_type: RootPoseTrajTerminalStateHandler
