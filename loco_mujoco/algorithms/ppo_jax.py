@@ -15,7 +15,40 @@ import optax
 from loco_mujoco.algorithms import (JaxRLAlgorithmBase, AgentConfBase, AgentStateBase, ActorCritic,
                                     Transition, TrainState, TrainStateBuffer, MetricHandlerTransition)
 from loco_mujoco.core.wrappers import LogWrapper, NStepWrapper, LogEnvState, VecEnv, NormalizeVecReward, SummaryMetrics
+from loco_mujoco.core.wrappers.mjx import Metrics
 from loco_mujoco.utils import MetricsHandler, ValidationSummary
+from loco_mujoco.environments.base import TrajState
+
+
+@struct.dataclass
+class CompactMetricsData:
+    """Small subset of the MJX state required by the validation MetricsHandler.
+
+    Storing the full MjxState per validation step is prohibitively expensive
+    (contact/solver buffers sized by nconmax dominate the memory), so only
+    these fields are retained for metric computation.
+    """
+    qpos: jnp.ndarray
+    qvel: jnp.ndarray
+    xpos: jnp.ndarray
+    xquat: jnp.ndarray
+    cvel: jnp.ndarray
+    site_xpos: jnp.ndarray
+    site_xmat: jnp.ndarray
+    subtree_com: jnp.ndarray
+
+
+@struct.dataclass
+class CompactEvalCarry:
+    traj_state: TrajState
+
+
+@struct.dataclass
+class CompactEvalState:
+    """Minimal env state for validation metric computation."""
+    data: CompactMetricsData
+    metrics: Metrics
+    additional_carry: CompactEvalCarry
 
 
 @dataclass(frozen=True)
@@ -363,14 +396,37 @@ class PPOJax(JaxRLAlgorithmBase):
                     log_env_state = env_state.find(LogEnvState)
                     logged_metrics = log_env_state.metrics
 
-                    transition = MetricHandlerTransition(env_state, logged_metrics)
+                    # extract the minimal state required by the MetricsHandler
+                    data = env_state.data
+                    compact_state = CompactEvalState(
+                        data=CompactMetricsData(
+                            qpos=data.qpos,
+                            qvel=data.qvel,
+                            xpos=data.xpos,
+                            xquat=data.xquat,
+                            cvel=data.cvel,
+                            site_xpos=data.site_xpos,
+                            site_xmat=data.site_xmat,
+                            subtree_com=data.subtree_com,
+                        ),
+                        metrics=logged_metrics,
+                        additional_carry=CompactEvalCarry(
+                            traj_state=env_state.additional_carry.traj_state
+                        ),
+                    )
+
+                    transition = MetricHandlerTransition(compact_state, logged_metrics)
 
                     runner_state = (train_state, env_state, obsv, train_state_buffer, rng)
                     return runner_state, transition
 
                 rng = runner_state[-1]
+                _, train_env_state, _, _, _ = runner_state
                 reset_rng = jax.random.split(rng, config.validation.num_envs)
-                obsv, env_state = env.reset(reset_rng)
+                if isinstance(env, NormalizeVecReward):
+                    obsv, env_state = env.reset_with_stats(reset_rng, train_env_state)
+                else:
+                    obsv, env_state = env.reset(reset_rng)
                 runner_state_eval = (train_state, env_state, obsv, train_state_buffer, rng)
 
                 # do evaluation runs

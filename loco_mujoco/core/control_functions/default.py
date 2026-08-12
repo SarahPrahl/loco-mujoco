@@ -16,12 +16,16 @@ class DefaultControl(ControlFunction):
     for the agent but uses the original action space for the environment.
     """
 
-    def __init__(self, env: any, **kwargs: Dict):
+    def __init__(self, env: any, center_on_default_pose: bool = False, **kwargs: Dict):
         """
         Initialize the control function class.
 
         Args:
             env (Any): The environment instance.
+            center_on_default_pose (bool): If True, normalize the action space such that action 0
+                corresponds to the default pose (qpos0) of the actuated joints, instead of the
+                midpoint of the actuator control range. Useful for position-actuated models whose
+                default pose is the relevant reference posture.
             **kwargs (Dict): Additional keyword arguments.
         """
         # get the limits of the action space
@@ -30,6 +34,12 @@ class DefaultControl(ControlFunction):
         # calculate mean and delta
         self.norm_act_mean = (self._actuator_high + self._actuator_low) / 2.0
         self.norm_act_delta = (self._actuator_high - self._actuator_low) / 2.0
+
+        if center_on_default_pose:
+            model = env._model
+            default_targets = np.array(
+                [model.qpos0[model.jnt_qposadr[model.actuator_trnid[i][0]]] for i in env._action_indices])
+            self.norm_act_mean = default_targets
 
         # set the action space limits for the agent to -1 and 1
         low = -np.ones_like(self.norm_act_mean)

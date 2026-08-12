@@ -230,6 +230,18 @@ class NormalizeVecReward(BaseWrapper):
         )
         return obs, state
 
+    def reset_with_stats(self, key, prev_state):
+        obs, state = self.env.reset(key)
+        batch_count = obs.shape[0]
+        state = NormalizeVecRewEnvState(
+            mean=prev_state.mean,
+            var=prev_state.var,
+            count=prev_state.count,
+            return_val=jnp.zeros((batch_count,)),
+            env_state=state,
+        )
+        return obs, state
+
     def step(self, state, action):
         next_observation, reward, absorbing, done, info, env_state = self.env.step(state.env_state, action)
 

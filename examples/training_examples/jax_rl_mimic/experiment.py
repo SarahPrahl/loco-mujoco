@@ -95,8 +95,8 @@ def experiment(config: DictConfig):
 
                     # metric for used for wandb sweep (optional)
                     site_rpos = validation_metrics.euclidean_distance.site_rpos[i]
-                    site_rrotvec = validation_metrics.euclidean_distance.site_rpos[i]
-                    site_rvel = validation_metrics.euclidean_distance.site_rpos[i]
+                    site_rrotvec = validation_metrics.euclidean_distance.site_rrotvec[i]
+                    site_rvel = validation_metrics.euclidean_distance.site_rvel[i]
                     run.log({"Metric for Sweep": site_rpos + site_rrotvec + site_rvel},
                             step=int(training_metrics.max_timestep[i]))
 
