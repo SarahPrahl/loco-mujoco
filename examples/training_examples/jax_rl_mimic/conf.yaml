@@ -45,10 +45,10 @@ experiment:
     reward_type: MimicReward
     reward_params:
       qpos_w_exp: 5
-      qvel_w_exp: 0.5
+      qvel_w_exp: 2
       rpos_w_exp: 5
       rquat_w_exp: 10
-      rvel_w_exp: 0.1
+      rvel_w_exp: 0.5
       qpos_w_sum: 0.5
       qvel_w_sum: 0.2
       rpos_w_sum: 0.5
@@ -95,7 +95,7 @@ experiment:
   lr: 1e-4
   num_envs: 2048
   num_steps: 200
-  total_timesteps: 200e6
+  total_timesteps: 400e6
   update_epochs: 4
   proportion_env_reward: 0.0
   num_minibatches: 32
@@ -104,11 +104,11 @@ experiment:
   clip_eps: 0.2
   init_std: 0.1
   learnable_std: true
-  ent_coef: 0.0
+  ent_coef: 0.003
   vf_coef: 0.5
   max_grad_norm: 0.5
   activation: tanh
-  anneal_lr: false
+  anneal_lr: true
   weight_decay: 0.0
   normalize_env: true
   debug: false

@@ -55,8 +55,17 @@ def experiment(config: DictConfig):
 
         # save agent state
         agent_state = out["agent_state"]
-        save_path = PPOJax.save_agent(result_dir, agent_conf, agent_state)
-        run.config.update({"agent_save_path": save_path})
+        best_agent_state = out.get("best_agent_state")
+
+        if best_agent_state is not None:
+            save_path = PPOJax.save_agent(result_dir, agent_conf, best_agent_state)
+            final_save_path = PPOJax.save_agent(result_dir, agent_conf, agent_state, name="PPOJax_saved_final")
+            run.config.update({"agent_save_path": str(save_path),
+                               "agent_save_path_final": str(final_save_path)})
+            agent_state = best_agent_state
+        else:
+            save_path = PPOJax.save_agent(result_dir, agent_conf, agent_state)
+            run.config.update({"agent_save_path": str(save_path)})
 
         import time
         t_start = time.time()
@@ -99,6 +108,19 @@ def experiment(config: DictConfig):
                     site_rvel = validation_metrics.euclidean_distance.site_rvel[i]
                     run.log({"Metric for Sweep": site_rpos + site_rrotvec + site_rvel},
                             step=int(training_metrics.max_timestep[i]))
+
+            # log info about the best agent selection
+            if config.experiment.validation.active:
+                sweep_metrics = (validation_metrics.euclidean_distance.site_rpos
+                                 + validation_metrics.euclidean_distance.site_rrotvec
+                                 + validation_metrics.euclidean_distance.site_rvel)
+                # mask non-validation steps (zero containers)
+                valid_idx = jnp.argwhere(sweep_metrics > 0)[:, 0]
+                best_idx = int(valid_idx[jnp.argmin(sweep_metrics[valid_idx])])
+                run.config.update({"best_agent_validation_index": best_idx,
+                                   "best_agent_sweep_metric": float(sweep_metrics[best_idx]),
+                                   "best_agent_validation_return": float(
+                                       validation_metrics.mean_episode_return[best_idx])})
 
         print(f"Time taken to log metrics: {time.time() - t_start}s")
 
