@@ -25,7 +25,21 @@ experiment:
     params:
       custom_dataset_conf:
         paths:
-          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/2_merged_filtered_v2.npz
+          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/4_merged_filtered.npz
+      domain_randomization_type: DefaultRandomizer
+      domain_randomization_params:
+        randomize_gravity: true
+        gravity_range: [9.61, 10.01]
+        randomize_geom_friction_tangential: true
+        geom_friction_tangential_range: [0.9, 1.1]
+        randomize_base_mass: true
+        base_mass_to_add_range: [-1.5, 1.5]
+        randomize_joint_damping: true
+        joint_damping_range: [0.5, 1.5]
+        add_joint_pos_noise: true
+        joint_pos_noise_scale: 0.002
+        add_joint_vel_noise: true
+        joint_vel_noise_scale: 0.05
   env_params:
     env_name: MjxUnitreeG1Inspire
     use_mjwarp: True
@@ -35,8 +49,8 @@ experiment:
     terminal_state_type: RootPoseTrajTerminalStateHandler
     terminal_state_params:
       root_height_margin: 0.15
-      root_rot_margin_degrees: 25.0
-      max_root_pos_deviation: 0.2
+      root_rot_margin_degrees: 30.0
+      max_root_pos_deviation: 0.3
     goal_type: GoalTrajMimic
     goal_params:
       visualize_goal: true
@@ -45,15 +59,15 @@ experiment:
     reward_type: MimicReward
     reward_params:
       qpos_w_exp: 5
-      qvel_w_exp: 2
+      qvel_w_exp: 4
       rpos_w_exp: 5
       rquat_w_exp: 10
-      rvel_w_exp: 0.5
+      rvel_w_exp: 1.0
       qpos_w_sum: 0.5
-      qvel_w_sum: 0.2
+      qvel_w_sum: 0.3
       rpos_w_sum: 0.5
       rquat_w_sum: 0.3
-      rvel_w_sum: 0.2
+      rvel_w_sum: 0.3
       joints_for_mimic:
         - root
         - left_hip_pitch_joint
@@ -78,6 +92,18 @@ experiment:
         - left_wrist_roll_joint
         - left_wrist_pitch_joint
         - left_wrist_yaw_joint
+        - left_thumb_1_joint
+        - left_thumb_2_joint
+        - left_thumb_3_joint
+        - left_thumb_4_joint
+        - left_index_1_joint
+        - left_index_2_joint
+        - left_middle_1_joint
+        - left_middle_2_joint
+        - left_ring_1_joint
+        - left_ring_2_joint
+        - left_little_1_joint
+        - left_little_2_joint
         - right_shoulder_pitch_joint
         - right_shoulder_roll_joint
         - right_shoulder_yaw_joint
@@ -85,17 +111,81 @@ experiment:
         - right_wrist_roll_joint
         - right_wrist_pitch_joint
         - right_wrist_yaw_joint
+        - right_thumb_1_joint
+        - right_thumb_2_joint
+        - right_thumb_3_joint
+        - right_thumb_4_joint
+        - right_index_1_joint
+        - right_index_2_joint
+        - right_middle_1_joint
+        - right_middle_2_joint
+        - right_ring_1_joint
+        - right_ring_2_joint
+        - right_little_1_joint
+        - right_little_2_joint
       sites_for_mimic:
         - upper_body_mimic
         - left_hand_mimic
         - left_foot_mimic
         - right_hand_mimic
         - right_foot_mimic
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
+      finger_w_sum: 0.4
+      finger_qpos_w_exp: 20
+      finger_qvel_w_exp: 2
+      finger_rpos_w_exp: 10
+      finger_rquat_w_exp: 20
+      finger_rvel_w_exp: 0.5
+      finger_joints_for_mimic:
+        - left_thumb_1_joint
+        - left_thumb_2_joint
+        - left_thumb_3_joint
+        - left_thumb_4_joint
+        - left_index_1_joint
+        - left_index_2_joint
+        - left_middle_1_joint
+        - left_middle_2_joint
+        - left_ring_1_joint
+        - left_ring_2_joint
+        - left_little_1_joint
+        - left_little_2_joint
+        - right_thumb_1_joint
+        - right_thumb_2_joint
+        - right_thumb_3_joint
+        - right_thumb_4_joint
+        - right_index_1_joint
+        - right_index_2_joint
+        - right_middle_1_joint
+        - right_middle_2_joint
+        - right_ring_1_joint
+        - right_ring_2_joint
+        - right_little_1_joint
+        - right_little_2_joint
+      finger_sites_for_mimic:
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
   hidden_layers: [512, 256]
   lr: 1e-4
   num_envs: 2048
   num_steps: 200
-  total_timesteps: 400e6
+  total_timesteps: 500e6
   update_epochs: 4
   proportion_env_reward: 0.0
   num_minibatches: 32
@@ -112,7 +202,7 @@ experiment:
   weight_decay: 0.0
   normalize_env: true
   debug: false
-  n_seeds: 1  # will automatically take seeds from 1 to n_seeds
+  n_seeds: 3  # will automatically take seeds from 1 to n_seeds
   vmap_across_seeds: true
   validation:
     active: true
@@ -136,6 +226,16 @@ experiment:
       - left_foot_mimic
       - right_hand_mimic
       - right_foot_mimic
+      - left_thumb_mimic
+      - left_index_mimic
+      - left_middle_mimic
+      - left_ring_mimic
+      - left_little_mimic
+      - right_thumb_mimic
+      - right_index_mimic
+      - right_middle_mimic
+      - right_ring_mimic
+      - right_little_mimic
     joints_to_ignore:
       - pelvis_tx
       - pelvis_tz

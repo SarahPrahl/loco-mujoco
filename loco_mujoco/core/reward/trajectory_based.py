@@ -195,6 +195,34 @@ class MimicReward(TrajectoryBasedReward):
                                        for name in rel_site_names])
         self._rel_body_ids = np.array([model.site_bodyid[site_id] for site_id in self._rel_site_ids])
 
+        # optional finger-specific reward group to counteract the dilution of the global mean
+        self._finger_w_sum = kwargs.get("finger_w_sum", 0.0)
+        self._finger_qpos_w_exp = kwargs.get("finger_qpos_w_exp", self._qpos_w_exp)
+        self._finger_qvel_w_exp = kwargs.get("finger_qvel_w_exp", self._qvel_w_exp)
+        self._finger_rpos_w_exp = kwargs.get("finger_rpos_w_exp", self._rpos_w_exp)
+        self._finger_rquat_w_exp = kwargs.get("finger_rquat_w_exp", self._rquat_w_exp)
+        self._finger_rvel_w_exp = kwargs.get("finger_rvel_w_exp", self._rvel_w_exp)
+        self._finger_qpos_ind = np.array([], dtype=int)
+        self._finger_qvel_ind = np.array([], dtype=int)
+        self._finger_site_ids = np.array([], dtype=int)
+        self._finger_body_ids = np.array([], dtype=int)
+        if self._finger_w_sum > 0.0:
+            finger_joints_for_mimic = kwargs.get("finger_joints_for_mimic", [])
+            finger_sites_for_mimic = kwargs.get("finger_sites_for_mimic", [])
+            if finger_joints_for_mimic:
+                finger_qpos_ind, finger_qvel_ind = [], []
+                for i in range(model.njnt):
+                    jnt_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)
+                    if jnt_name in finger_joints_for_mimic:
+                        finger_qpos_ind.append(mj_jntid2qposid(i, model))
+                        finger_qvel_ind.append(mj_jntid2qvelid(i, model))
+                self._finger_qpos_ind = np.concatenate(finger_qpos_ind)
+                self._finger_qvel_ind = np.concatenate(finger_qvel_ind)
+            if finger_sites_for_mimic:
+                self._finger_site_ids = np.array([mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, name)
+                                                  for name in finger_sites_for_mimic])
+                self._finger_body_ids = np.array([model.site_bodyid[site_id] for site_id in self._finger_site_ids])
+
         # determine qpos and qvel indices
         quat_in_qpos = []
         qpos_ind = []
@@ -342,6 +370,33 @@ class MimicReward(TrajectoryBasedReward):
             rvel_rot_reward = backend.exp(-self._rvel_w_exp*rvel_rot_dist)
             rvel_lin_reward = backend.exp(-self._rvel_w_exp*rvel_lin_dist)
 
+        # finger-specific reward (optional, counteracts dilution of the global mean)
+        finger_reward = 0.0
+        if self._finger_w_sum > 0.0 and (len(self._finger_qpos_ind) > 0 or len(self._finger_site_ids) > 0):
+            finger_dists, finger_w_exps = [], []
+            if len(self._finger_qpos_ind) > 0:
+                fqpos_dist = backend.mean(backend.square(data.qpos[self._finger_qpos_ind]
+                                                         - traj_data_single.qpos[self._finger_qpos_ind]))
+                fqvel_dist = backend.mean(backend.square(data.qvel[self._finger_qvel_ind]
+                                                         - traj_data_single.qvel[self._finger_qvel_ind]))
+                finger_dists += [fqpos_dist, fqvel_dist]
+                finger_w_exps += [self._finger_qpos_w_exp, self._finger_qvel_w_exp]
+            if len(self._finger_site_ids) > 0:
+                fsite_rpos, fsite_rangles, fsite_rvel = (
+                    calculate_relative_site_quatities(data, self._finger_site_ids, self._finger_body_ids,
+                                                      model.body_rootid, backend))
+                fsite_rpos_traj, fsite_rangles_traj, fsite_rvel_traj = (
+                    calculate_relative_site_quatities(traj_data_single, self._finger_site_ids,
+                                                      self._finger_body_ids, model.body_rootid, backend))
+                finger_dists += [backend.mean(backend.square(fsite_rpos - fsite_rpos_traj)),
+                                 backend.mean(backend.square(fsite_rangles - fsite_rangles_traj)),
+                                 backend.mean(backend.square(fsite_rvel[:, :3] - fsite_rvel_traj[:, :3])),
+                                 backend.mean(backend.square(fsite_rvel[:, 3:] - fsite_rvel_traj[:, 3:]))]
+                finger_w_exps += [self._finger_rpos_w_exp, self._finger_rquat_w_exp,
+                                  self._finger_rvel_w_exp, self._finger_rvel_w_exp]
+            finger_reward = self._finger_w_sum * backend.mean(backend.stack([
+                backend.exp(-w_exp*dist) for dist, w_exp in zip(finger_dists, finger_w_exps)]))
+
         # calculate costs
         # out of bounds action cost
         if self._action_out_of_bounds_coeff > 0.0:
@@ -387,7 +442,7 @@ class MimicReward(TrajectoryBasedReward):
                         + self._rpos_w_sum * rpos_reward + self._rquat_w_sum * rangles_reward
                         + self._rvel_w_sum * rvel_rot_reward + self._rvel_w_sum * rvel_lin_reward)
 
-        total_reward = total_reward + total_penalities
+        total_reward = total_reward + finger_reward + total_penalities
 
         # clip to positive values
         total_reward = backend.maximum(total_reward, 0.0)
