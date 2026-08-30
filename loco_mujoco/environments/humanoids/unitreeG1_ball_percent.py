@@ -381,7 +381,8 @@ class UnitreeG1BallPercent(BaseRobotHumanoid):
                             ObservationType.JointPos("q_right_little_1_joint", xml_name="right_little_1_joint"),
                             ObservationType.JointPos("q_right_little_2_joint", xml_name="right_little_2_joint"),
 
-                            ObservationType.FreeJointPos("q_ball_joint", xml_name="ball_joint"),
+                            ObservationType.BodyPos("ball_pos", xml_name="ball"),
+                            ObservationType.BodyRot("ball_quat", xml_name="ball"),
 
                             # # ------------- JOINT VEL -------------
                             ObservationType.FreeJointVel("dq_root", xml_name="root"),
@@ -442,7 +443,7 @@ class UnitreeG1BallPercent(BaseRobotHumanoid):
                             ObservationType.JointVel("dq_right_little_1_joint", xml_name="right_little_1_joint"),
                             ObservationType.JointVel("dq_right_little_2_joint", xml_name="right_little_2_joint"),
 
-                            ObservationType.FreeJointVel("dq_ball_joint", xml_name="ball_joint"),
+                            ObservationType.BodyVel("ball_vel", xml_name="ball"),
                             ]
 
         return observation_spec
@@ -488,7 +489,7 @@ class UnitreeG1BallPercent(BaseRobotHumanoid):
         """
         Returns the default XML file path for the Unitree G1 environment.
         """
-        xml_file = "robot_models_new/scene_percent_hand_ball.xml"
+        xml_file = "robot_models_new/scene_percent_hand_ball_body.xml"
         model_path = os.path.join(os.getcwd().removesuffix("/loco-mujoco/loco_mujoco/environments/humanoids"), xml_file)
         return model_path
 

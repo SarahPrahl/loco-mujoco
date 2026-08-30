@@ -215,6 +215,8 @@ class LocoEnv(Mjx):
         # update trajectory state
         if self.th is not None:
             carry = self.th.update_state(self, model, data, carry, np)
+            traj_data = self.th.get_current_traj_data(carry, np)
+            data = self._sync_mocap_body_poses(data, traj_data, np)
 
         return data, carry
 
@@ -238,6 +240,8 @@ class LocoEnv(Mjx):
         # update trajectory state
         if self.th is not None:
             carry = self.th.update_state(self, self._model, data, carry, jnp)
+            traj_data = self.th.get_current_traj_data(carry, jnp)
+            data = self._sync_mocap_body_poses(data, traj_data, jnp)
 
         return data, carry
 
@@ -545,6 +549,44 @@ class LocoEnv(Mjx):
         self.play_trajectory(n_episodes, n_steps_per_episode, True, render,
                              record, recorder_params, callback_class, quiet, key)
 
+    def _sync_mocap_body_poses(self, data, traj_data, backend: ModuleType):
+        """Sync mocap bodies (e.g., the ball) from trajectory body poses.
+        
+        Args:
+            data (MjData): The Mujoco data structure.
+            traj_data: The trajectory data containing state information.
+            backend (ModuleType): The numerical backend to use (NumPy or JAX NumPy).
+    
+        Returns:
+            MjData: The updated Mujoco data structure.
+        """
+        # if there are no mocap bodies or the trajectory data is empty, return the original data
+        if self._model.nmocap == 0 or traj_data.xpos.size == 0 or traj_data.xquat.size == 0:
+            return data
+
+        # for all mocap bodies, set the MjData position and orientation from the trajectory data
+        mocap_body_ids = np.where(self._model.body_mocapid != -1)[0]
+        for body_id in mocap_body_ids:
+            mocap_id = int(self._model.body_mocapid[body_id])
+            if mocap_id < 0 or mocap_id >= self._model.nmocap:
+                continue
+
+            body_xpos = traj_data.xpos[body_id]
+            body_xquat = traj_data.xquat[body_id]
+
+            if backend == np:
+                data.mocap_pos[mocap_id] = np.asarray(body_xpos, dtype=float)
+                data.mocap_quat[mocap_id] = np.asarray(body_xquat, dtype=float)
+                data.xpos[body_id] = np.asarray(body_xpos, dtype=float)
+                data.xquat[body_id] = np.asarray(body_xquat, dtype=float)
+            else:
+                data = data.replace(
+                    mocap_pos=data.mocap_pos.at[mocap_id].set(body_xpos),
+                    mocap_quat=data.mocap_quat.at[mocap_id].set(body_xquat),
+                    xpos=data.xpos.at[body_id].set(body_xpos),
+                    xquat=data.xquat.at[body_id].set(body_xquat))
+        return data
+
     def set_sim_state_from_traj_data(self, data, traj_data, carry) -> MjData:
         """
         Sets the Mujoco datastructure to the state specified in the trajectory data.
@@ -557,22 +599,20 @@ class LocoEnv(Mjx):
         Returns:
             MjData: The updated Mujoco data structure.
         """
-        # set the robot to the initial xy position (0,0)
-        robot_free_jnt_name = self.root_free_joint_xml_name
-        robot_free_jnt_qpos_id_xy = np.array(mj_jntname2qposid(robot_free_jnt_name, self._model))[:2]
-        all_free_jnt_qpos_id_xy = self.free_jnt_qpos_id[:, :2].reshape(-1)
-        # get all none robot free joint qpos ids
-        additional_free_jnt_qpos_id_xy = np.array([id for id in all_free_jnt_qpos_id_xy if id not in robot_free_jnt_qpos_id_xy])
-        traj_state = carry.traj_state
-        # get the initial state of the current trajectory
-        traj_data_init = self.th.traj.data.get(traj_state.traj_no, traj_state.subtraj_step_no_init, np)
-        # subtract the initial state from the current state
-        traj_data.qpos[robot_free_jnt_qpos_id_xy] -= traj_data_init.qpos[robot_free_jnt_qpos_id_xy]
-        if len(additional_free_jnt_qpos_id_xy) > 0:
-            # correct the additional free joint qpos to keep the ball in the same position
-            traj_data.qpos[additional_free_jnt_qpos_id_xy] -= traj_data_init.qpos[robot_free_jnt_qpos_id_xy]
-        # print("Current Ball position: ", traj_data.qpos[60:66])
-        return Mjx.set_sim_state_from_traj_data(data, traj_data, carry)
+        data = self._sync_mocap_body_poses(data, traj_data, np)
+
+        if traj_data.xpos.size > 0:
+            data.xpos = traj_data.xpos
+        if traj_data.xquat.size > 0:
+            data.xquat = traj_data.xquat
+        if traj_data.cvel.size > 0:
+            data.cvel = traj_data.cvel
+        if traj_data.qpos.size > 0:
+            data.qpos = traj_data.qpos
+        if traj_data.qvel.size > 0:
+            data.qvel = traj_data.qvel
+
+        return data
 
     def mjx_set_sim_state_from_traj_data(self, data, traj_data, carry) -> Data:
         """
@@ -586,21 +626,24 @@ class LocoEnv(Mjx):
         Returns:
             Data: Updated Mujoco data.
         """
-        robot_free_jnt_name = self.root_free_joint_xml_name
-        robot_free_jnt_qpos_id_xy = np.array(mj_jntname2qposid(robot_free_jnt_name, self._model))[:2]
-        all_free_jnt_qpos_id_xy = self.free_jnt_qpos_id[:, :2].reshape(-1)
-        # get all none robot free joint qpos ids
-        additional_free_jnt_qpos_id_xy = np.array([id for id in all_free_jnt_qpos_id_xy if id not in robot_free_jnt_qpos_id_xy])
-        traj_state = carry.traj_state
-        # get the initial state of the current trajectory
-        traj_data_init = self.th.traj.data.get(traj_state.traj_no, traj_state.subtraj_step_no_init, jnp)
-        # subtract the initial state from the current state
-        traj_data = traj_data.replace(
-            qpos=traj_data.qpos.at[robot_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
-        if len(additional_free_jnt_qpos_id_xy) > 0:
-            # correct the additional free joint qpos to keep the ball in the same position
-            traj_data = traj_data.replace(
-                qpos=traj_data.qpos.at[additional_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
+        data = self._sync_mocap_body_poses(data, traj_data, jnp)
+
+        # robot_free_jnt_name = self.root_free_joint_xml_name
+        # robot_free_jnt_qpos_id_xy = np.array(mj_jntname2qposid(robot_free_jnt_name, self._model))[:2]
+        # all_free_jnt_qpos_id_xy = self.free_jnt_qpos_id[:, :2].reshape(-1)
+        # # get all none robot free joint qpos ids
+        # additional_free_jnt_qpos_id_xy = np.array([id for id in all_free_jnt_qpos_id_xy if id not in robot_free_jnt_qpos_id_xy])
+        # traj_state = carry.traj_state
+        # # get the initial state of the current trajectory
+        # traj_data_init = self.th.traj.data.get(traj_state.traj_no, traj_state.subtraj_step_no_init, jnp)
+        # # subtract the initial state from the current state
+        # traj_data = traj_data.replace(
+        #     qpos=traj_data.qpos.at[robot_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
+        # if len(additional_free_jnt_qpos_id_xy) > 0:
+        #     # correct the additional free joint qpos to keep the ball in the same position
+        #     traj_data = traj_data.replace(
+        #         qpos=traj_data.qpos.at[additional_free_jnt_qpos_id_xy].add(-traj_data_init.qpos[robot_free_jnt_qpos_id_xy]))
+        
         return Mjx.mjx_set_sim_state_from_traj_data(data, traj_data, carry)
 
     def _init_additional_carry(self,

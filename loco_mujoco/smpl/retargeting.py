@@ -794,6 +794,7 @@ def extend_motion(
     """
     Extend a motion trajectory to include more model-specific entities
     like body xpos, site positions, etc. and to match the environment's frequency.
+    If the environment has a ball, the ball's position and orientation are also updated in the trajectory.
 
     Args:
         env_name (str): Name of the environment.
@@ -821,6 +822,15 @@ def extend_motion(
         callback_class=callback
     )
     traj_data, traj_info = callback.extend_trajectory_data(traj_data, traj_info)
+
+    # --------------------- Handle special cases for environments with a ball ---------------------
+    # In environments with a ball, the positions and orientations are stores in ball_pos and ball_quat of the npz, wich are then stored as atributes of the TrajectoryData.
+    # The following code replaces the ball's position in the TrajectoryData xpos and xquat with the one stored in ball_pos.
+    if "Ball" in env_name:
+        # print("Ball in environment")
+        ball_idx = traj_info.body_names.index("ball")
+        traj_data = traj_data.replace(xpos=traj_data.xpos.at[:, ball_idx, :].set(traj_data.ball_pos), xquat=traj_data.xquat.at[:, ball_idx, :].set(traj_data.ball_quat))
+        # print(traj_data.xpos[:, ball_idx, :])
     traj = replace(traj, data=traj_data, info=traj_info)
 
     return traj
