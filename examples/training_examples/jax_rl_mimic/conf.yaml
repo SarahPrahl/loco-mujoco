@@ -8,18 +8,14 @@ defaults:
 #  hydra_logging: {}
 #  sweeper:
 #    params:
+#      experiment.seed: 1, 2, 3
 #      experiment.learnable_std: true, false
-#      experiment.init_std: 0.1, 0.2
-#      experiment.num_steps: 10, 20
-#      experiment.update_epochs: 4
-#      experiment.clip_eps: 0.2, 0.05
-#      # env_params
-#      experiment.env_params.env_name: MjxUnitreeH1.walk, MjxUnitreeH1.run
 
 wandb:
   project: "deepmimic"
 
 experiment:
+  seed: 1
   task_factory:
     name: ImitationFactory
     params:
@@ -32,14 +28,38 @@ experiment:
         gravity_range: [9.61, 10.01]
         randomize_geom_friction_tangential: true
         geom_friction_tangential_range: [0.9, 1.1]
-        randomize_base_mass: true
-        base_mass_to_add_range: [-1.5, 1.5]
+        randomize_geom_friction_torsional: false
+        geom_friction_torsional_range: [0.004, 0.006]
+        randomize_geom_friction_rolling: false
+        geom_friction_rolling_range: [0.00009, 0.00011]
+        randomize_geom_damping: false
+        geom_damping_range: [72, 88]
+        randomize_geom_stiffness: false
+        geom_stiffness_range: [900, 1100]
         randomize_joint_damping: true
         joint_damping_range: [0.5, 1.5]
+        randomize_joint_friction_loss: false
+        joint_friction_loss_range: [0.0, 0.2]
+        randomize_joint_armature: false
+        joint_armature_range: [0.08, 0.12]
+        randomize_base_mass: true
+        base_mass_to_add_range: [-1.5, 1.5]
+        randomize_com_displacement: false
+        com_displacement_range: [-0.15, 0.15]
+        randomize_link_mass: false
+        link_mass_multiplier_range:
+          root_body: [0.9, 1.1]
+          other_bodies: [0.95, 1.05]
         add_joint_pos_noise: true
         joint_pos_noise_scale: 0.002
         add_joint_vel_noise: true
         joint_vel_noise_scale: 0.05
+        add_gravity_noise: false
+        gravity_noise_scale: 0.015
+        add_free_joint_lin_vel_noise: false
+        lin_vel_noise_scale: 0.1
+        add_free_joint_ang_vel_noise: false
+        ang_vel_noise_scale: 0.02
   env_params:
     env_name: MjxUnitreeG1Inspire
     use_mjwarp: True
@@ -59,15 +79,15 @@ experiment:
     reward_type: MimicReward
     reward_params:
       qpos_w_exp: 5
-      qvel_w_exp: 4
+      qvel_w_exp: 6
       rpos_w_exp: 5
       rquat_w_exp: 10
-      rvel_w_exp: 1.0
+      rvel_w_exp: 2.0
       qpos_w_sum: 0.5
-      qvel_w_sum: 0.3
+      qvel_w_sum: 0.5
       rpos_w_sum: 0.5
       rquat_w_sum: 0.3
-      rvel_w_sum: 0.3
+      rvel_w_sum: 0.5
       joints_for_mimic:
         - root
         - left_hip_pitch_joint
@@ -202,7 +222,7 @@ experiment:
   weight_decay: 0.0
   normalize_env: true
   debug: false
-  n_seeds: 3  # will automatically take seeds from 1 to n_seeds
+  n_seeds: 1  # will automatically take seeds from seed to seed+n_seeds
   vmap_across_seeds: true
   validation:
     active: true

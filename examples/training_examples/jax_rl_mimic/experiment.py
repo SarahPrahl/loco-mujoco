@@ -49,7 +49,8 @@ def experiment(config: DictConfig):
         train_fn = jax.jit(jax.vmap(train_fn)) if config.experiment.n_seeds > 1 else jax.jit(train_fn)
 
         # get rng keys and run training
-        rngs = [jax.random.PRNGKey(i) for i in range(config.experiment.n_seeds+1)]  # create rngs from seed
+        rngs = [jax.random.PRNGKey(i) for i in range(config.experiment.seed,
+                                                      config.experiment.seed + config.experiment.n_seeds + 1)]
         rng, _rng = rngs[0], jnp.squeeze(jnp.vstack(rngs[1:]))
         out = train_fn(_rng)
 
