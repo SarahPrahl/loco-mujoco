@@ -82,10 +82,10 @@ class JaxRLAlgorithmBase:
         raise NotImplementedError
 
     @classmethod
-    def save_agent(cls, path, agent_conf: AgentConfBase, agent_state: AgentStateBase):
+    def save_agent(cls, path, agent_conf: AgentConfBase, agent_state: AgentStateBase, name: str = None):
         """ Save the agent state to a file."""
         path = Path(path)
-        path = path / (cls.__name__ + "_saved")
+        path = path / (name if name is not None else cls.__name__ + "_saved")
         path = path.with_suffix(cls._saved_agent_suffix)
         # serialize agent state
         serialized_state = cls.serialize(agent_conf, agent_state)

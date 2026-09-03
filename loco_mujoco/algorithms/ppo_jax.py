@@ -15,7 +15,40 @@ import optax
 from loco_mujoco.algorithms import (JaxRLAlgorithmBase, AgentConfBase, AgentStateBase, ActorCritic,
                                     Transition, TrainState, TrainStateBuffer, MetricHandlerTransition)
 from loco_mujoco.core.wrappers import LogWrapper, NStepWrapper, LogEnvState, VecEnv, NormalizeVecReward, SummaryMetrics
+from loco_mujoco.core.wrappers.mjx import Metrics
 from loco_mujoco.utils import MetricsHandler, ValidationSummary
+from loco_mujoco.environments.base import TrajState
+
+
+@struct.dataclass
+class CompactMetricsData:
+    """Small subset of the MJX state required by the validation MetricsHandler.
+
+    Storing the full MjxState per validation step is prohibitively expensive
+    (contact/solver buffers sized by nconmax dominate the memory), so only
+    these fields are retained for metric computation.
+    """
+    qpos: jnp.ndarray
+    qvel: jnp.ndarray
+    xpos: jnp.ndarray
+    xquat: jnp.ndarray
+    cvel: jnp.ndarray
+    site_xpos: jnp.ndarray
+    site_xmat: jnp.ndarray
+    subtree_com: jnp.ndarray
+
+
+@struct.dataclass
+class CompactEvalCarry:
+    traj_state: TrajState
+
+
+@struct.dataclass
+class CompactEvalState:
+    """Minimal env state for validation metric computation."""
+    data: CompactMetricsData
+    metrics: Metrics
+    additional_carry: CompactEvalCarry
 
 
 @dataclass(frozen=True)
@@ -125,7 +158,7 @@ class PPOJax(JaxRLAlgorithmBase):
                 optax.clip_by_global_norm(config.experiment.max_grad_norm),
                 optax.adamw(weight_decay=config.experiment.weight_decay, eps=1e-5,
                             learning_rate=lambda count: cls._linear_lr_schedule(count, config.experiment.num_minibatches,
-                                                                                config.experiment.update_epochs, config.lr,
+                                                                                config.experiment.update_epochs, config.experiment.lr,
                                                                                 config.experiment.num_updates))
             )
         else:
@@ -177,11 +210,15 @@ class PPOJax(JaxRLAlgorithmBase):
 
         train_state_buffer = TrainStateBuffer.create(train_state, config.validation.num)
 
+        # best train state (tracked via validation imitation score when a metrics handler is present)
+        best_train_state = train_state
+        best_score = jnp.inf
+
         # TRAIN LOOP
         def _update_step(runner_state, unused):
             # COLLECT TRAJECTORIES
             def _env_step(runner_state, unused):
-                train_state, env_state, last_obs, train_state_buffer, rng = runner_state
+                train_state, env_state, last_obs, train_state_buffer, best_train_state, best_score, rng = runner_state
 
                 # SELECT ACTION
                 rng, _rng = jax.random.split(rng)
@@ -204,7 +241,7 @@ class PPOJax(JaxRLAlgorithmBase):
                     done, absorbing, action, value, reward, log_prob, last_obs, info, env_state.additional_carry.traj_state,
                     logged_metrics
                 )
-                runner_state = (train_state, env_state, obsv, train_state_buffer, rng)
+                runner_state = (train_state, env_state, obsv, train_state_buffer, best_train_state, best_score, rng)
                 return runner_state, transition
 
             runner_state, traj_batch = jax.lax.scan(
@@ -212,7 +249,7 @@ class PPOJax(JaxRLAlgorithmBase):
             )
 
             # CALCULATE ADVANTAGE
-            train_state, env_state, last_obs, train_state_buffer, rng = runner_state
+            train_state, env_state, last_obs, train_state_buffer, best_train_state, best_score, rng = runner_state
             y, _ = network.apply({'params': train_state.params,
                                               'run_stats': train_state.run_stats},
                                              last_obs, mutable=["run_stats"])
@@ -345,7 +382,7 @@ class PPOJax(JaxRLAlgorithmBase):
             def _evaluation_step():
 
                 def _eval_env(runner_state, unused):
-                    train_state, env_state, last_obs, train_state_buffer, rng = runner_state
+                    train_state, env_state, last_obs, train_state_buffer, best_train_state, best_score, rng = runner_state
 
                     # SELECT ACTION
                     rng, _rng = jax.random.split(rng)
@@ -363,15 +400,38 @@ class PPOJax(JaxRLAlgorithmBase):
                     log_env_state = env_state.find(LogEnvState)
                     logged_metrics = log_env_state.metrics
 
-                    transition = MetricHandlerTransition(env_state, logged_metrics)
+                    # extract the minimal state required by the MetricsHandler
+                    data = env_state.data
+                    compact_state = CompactEvalState(
+                        data=CompactMetricsData(
+                            qpos=data.qpos,
+                            qvel=data.qvel,
+                            xpos=data.xpos,
+                            xquat=data.xquat,
+                            cvel=data.cvel,
+                            site_xpos=data.site_xpos,
+                            site_xmat=data.site_xmat,
+                            subtree_com=data.subtree_com,
+                        ),
+                        metrics=logged_metrics,
+                        additional_carry=CompactEvalCarry(
+                            traj_state=env_state.additional_carry.traj_state
+                        ),
+                    )
 
-                    runner_state = (train_state, env_state, obsv, train_state_buffer, rng)
+                    transition = MetricHandlerTransition(compact_state, logged_metrics)
+
+                    runner_state = (train_state, env_state, obsv, train_state_buffer, best_train_state, best_score, rng)
                     return runner_state, transition
 
                 rng = runner_state[-1]
+                _, train_env_state, _, _, _, _, _ = runner_state
                 reset_rng = jax.random.split(rng, config.validation.num_envs)
-                obsv, env_state = env.reset(reset_rng)
-                runner_state_eval = (train_state, env_state, obsv, train_state_buffer, rng)
+                if isinstance(env, NormalizeVecReward):
+                    obsv, env_state = env.reset_with_stats(reset_rng, train_env_state)
+                else:
+                    obsv, env_state = env.reset(reset_rng)
+                runner_state_eval = (train_state, env_state, obsv, train_state_buffer, best_train_state, best_score, rng)
 
                 # do evaluation runs
                 _, traj_batch_eval = jax.lax.scan(
@@ -405,18 +465,33 @@ class PPOJax(JaxRLAlgorithmBase):
                                               lambda x, y: TrainStateBuffer.add(x, y),
                                               lambda x, y: x, train_state_buffer, train_state)
 
-            runner_state = (train_state, env_state, last_obs, train_state_buffer, rng)
+            # track best train state according to the validation imitation score
+            if mh is not None:
+                def _compute_best_score():
+                    ed = validation_metrics.euclidean_distance
+                    return jnp.sum(ed.site_rpos) + jnp.sum(ed.site_rrotvec) + jnp.sum(ed.site_rvel)
+
+                candidate_score = jax.lax.cond(counter % config.validation_interval == 0,
+                                               _compute_best_score, lambda: jnp.inf)
+                best_train_state, best_score = jax.lax.cond(
+                    candidate_score < best_score,
+                    lambda: (train_state, candidate_score),
+                    lambda: (best_train_state, best_score))
+
+            runner_state = (train_state, env_state, last_obs, train_state_buffer, best_train_state, best_score, rng)
             return runner_state, (metric, validation_metrics)
 
         rng, _rng = jax.random.split(rng)
-        runner_state = (train_state, env_state, obsv, train_state_buffer, _rng)
+        runner_state = (train_state, env_state, obsv, train_state_buffer, best_train_state, best_score, _rng)
         runner_state, metrics = jax.lax.scan(
             _update_step, runner_state, None, config.num_updates
         )
 
         agent_state = cls._agent_state(train_state=runner_state[0])
+        best_agent_state = None if mh is None else cls._agent_state(train_state=runner_state[4])
 
         return {"agent_state": agent_state,
+                "best_agent_state": best_agent_state,
                 "training_metrics": metrics[0],
                 "validation_metrics": metrics[1]}
 

@@ -2,59 +2,141 @@ defaults:
   - override hydra/job_logging: default
   - override hydra/launcher: basic
 
-#hydra:
-#  mode: MULTIRUN
-#  job_logging: {}
-#  hydra_logging: {}
-#  sweeper:
-#    params:
-#      experiment.learnable_std: true, false
-#      experiment.init_std: 0.1, 0.2
-#      experiment.num_steps: 10, 20
-#      experiment.update_epochs: 4
-#      experiment.clip_eps: 0.2, 0.05
-#      # env_params
-#      experiment.env_params.env_name: MjxUnitreeH1.walk, MjxUnitreeH1.run
-
 wandb:
   project: "deepmimic"
 
 experiment:
+  seed: 1
   task_factory:
     name: ImitationFactory
     params:
       custom_dataset_conf:
         directory: /home/sarah/pg/mujoco/mocap_data/npz_27_07_26_and_03_08_26
         # paths:
-          # - /home/sarah/pg/mujoco/mocap_data/npz/18_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/19_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/21_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/25_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/28_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/29_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/30_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/31_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/35_merged_filtered.npz
-          # - /home/sarah/pg/mujoco/mocap_data/npz/40_merged_filtered.npz
+        #   - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/4_merged_filtered.npz
+      domain_randomization_type: DefaultRandomizer
+      domain_randomization_params:
+        randomize_gravity: true
+        gravity_range: [9.66, 9.96]
+        randomize_geom_friction_tangential: true
+        geom_friction_tangential_range: [0.92, 1.08]
+        randomize_geom_friction_torsional: false
+        geom_friction_torsional_range: [0.004, 0.006]
+        randomize_geom_friction_rolling: false
+        geom_friction_rolling_range: [0.00009, 0.00011]
+        randomize_geom_damping: false
+        geom_damping_range: [72, 88]
+        randomize_geom_stiffness: false
+        geom_stiffness_range: [900, 1100]
+        randomize_joint_damping: true
+        joint_damping_range: [0.6, 1.4]
+        randomize_joint_friction_loss: false
+        joint_friction_loss_range: [0.0, 0.2]
+        randomize_joint_armature: true
+        joint_armature_range: [0.08, 0.12]
+        randomize_base_mass: true
+        base_mass_to_add_range: [-1.0, 1.0]
+        randomize_com_displacement: false
+        com_displacement_range: [-0.15, 0.15]
+        randomize_link_mass: true
+        link_mass_multiplier_range:
+          root_body: [0.95, 1.05]
+          other_bodies: [0.95, 1.05]
+        add_joint_pos_noise: true
+        joint_pos_noise_scale: 0.0015
+        add_joint_vel_noise: true
+        joint_vel_noise_scale: 0.03
+        add_gravity_noise: false
+        gravity_noise_scale: 0.015
+        add_free_joint_lin_vel_noise: false
+        lin_vel_noise_scale: 0.1
+        add_free_joint_ang_vel_noise: false
+        ang_vel_noise_scale: 0.02
   env_params:
     env_name: MjxUnitreeG1BallInspire
-    # disable_arms: True
     use_mjwarp: True
-    nconmax: 7000
+    nconmax: 32000
     headless: True
-    horizon: 1000
-    # goal_type: GoalTrajMimic  ### Problem!!! Increases the observation space from 60 to 513. Issues with conversion to SB3 model.
-    # goal_params:
-    #   visualize_goal: true
-    control_type: ${control_config.torque_control.control_type}
-    control_params: ${control_config.torque_control.control_params}
+    horizon: 3000
+    terminal_state_type: RootPoseTrajTerminalStateHandler
+    terminal_state_params:
+      root_height_margin: 0.2     # Increased from 0.15 to allow slightly more height variance
+      root_rot_margin_degrees: 45.0
+      max_root_pos_deviation: 0.8  # Increased to 0.8 to allow longer recovery rollouts
+    goal_type: GoalTrajMimic
+    goal_params:
+      visualize_goal: true
+    control_type: ${control_config.position_control.control_type}
+    control_params: ${control_config.position_control.control_params}
     reward_type: MimicReward
     reward_params:
-      qpos_w_sum: 0.4
-      qvel_w_sum: 0.2
+      action_rate_coeff: 0.0005
+      joint_acc_coeff: 0.0002
+      qpos_w_exp: 5
+      qvel_w_exp: 8
+      rpos_w_exp: 5
+      rquat_w_exp: 12
+      rvel_w_exp: 3.0
+      qpos_w_sum: 0.6
+      qvel_w_sum: 0.5
       rpos_w_sum: 0.5
-      rquat_w_sum: 0.3
-      rvel_w_sum: 0.1
+      rquat_w_sum: 0.35
+      rvel_w_sum: 0.5
+      joints_for_mimic:
+        - root
+        - left_hip_pitch_joint
+        - left_hip_roll_joint
+        - left_hip_yaw_joint
+        - left_knee_joint
+        - left_ankle_pitch_joint
+        - left_ankle_roll_joint
+        - right_hip_pitch_joint
+        - right_hip_roll_joint
+        - right_hip_yaw_joint
+        - right_knee_joint
+        - right_ankle_pitch_joint
+        - right_ankle_roll_joint
+        - waist_yaw_joint
+        - waist_roll_joint
+        - waist_pitch_joint
+        - left_shoulder_pitch_joint
+        - left_shoulder_roll_joint
+        - left_shoulder_yaw_joint
+        - left_elbow_joint
+        - left_wrist_roll_joint
+        - left_wrist_pitch_joint
+        - left_wrist_yaw_joint
+        - left_thumb_1_joint
+        - left_thumb_2_joint
+        - left_thumb_3_joint
+        - left_thumb_4_joint
+        - left_index_1_joint
+        - left_index_2_joint
+        - left_middle_1_joint
+        - left_middle_2_joint
+        - left_ring_1_joint
+        - left_ring_2_joint
+        - left_little_1_joint
+        - left_little_2_joint
+        - right_shoulder_pitch_joint
+        - right_shoulder_roll_joint
+        - right_shoulder_yaw_joint
+        - right_elbow_joint
+        - right_wrist_roll_joint
+        - right_wrist_pitch_joint
+        - right_wrist_yaw_joint
+        - right_thumb_1_joint
+        - right_thumb_2_joint
+        - right_thumb_3_joint
+        - right_thumb_4_joint
+        - right_index_1_joint
+        - right_index_2_joint
+        - right_middle_1_joint
+        - right_middle_2_joint
+        - right_ring_1_joint
+        - right_ring_2_joint
+        - right_little_1_joint
+        - right_little_2_joint
       sites_for_mimic:
         - upper_body_mimic
         - left_hand_mimic
@@ -71,36 +153,87 @@ experiment:
         - right_ring_mimic
         - right_little_mimic
         - right_foot_mimic
-  hidden_layers: [512, 256]
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
+      finger_w_sum: 0.4
+      finger_qpos_w_exp: 10
+      finger_qvel_w_exp: 2
+      finger_rpos_w_exp: 10
+      finger_rquat_w_exp: 10
+      finger_rvel_w_exp: 0.5
+      finger_joints_for_mimic:
+        - left_thumb_1_joint
+        - left_thumb_2_joint
+        - left_thumb_3_joint
+        - left_thumb_4_joint
+        - left_index_1_joint
+        - left_index_2_joint
+        - left_middle_1_joint
+        - left_middle_2_joint
+        - left_ring_1_joint
+        - left_ring_2_joint
+        - left_little_1_joint
+        - left_little_2_joint
+        - right_thumb_1_joint
+        - right_thumb_2_joint
+        - right_thumb_3_joint
+        - right_thumb_4_joint
+        - right_index_1_joint
+        - right_index_2_joint
+        - right_middle_1_joint
+        - right_middle_2_joint
+        - right_ring_1_joint
+        - right_ring_2_joint
+        - right_little_1_joint
+        - right_little_2_joint
+      finger_sites_for_mimic:
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
+  hidden_layers: [1024, 1024, 512]
   lr: 1e-4
   num_envs: 2048
-  num_steps: 200
-  total_timesteps: 300e6
+  num_steps: 100
+  total_timesteps: 400e6
   update_epochs: 4
   proportion_env_reward: 0.0
   num_minibatches: 32
   gamma: 0.99
   gae_lambda: 0.95
   clip_eps: 0.2
-  init_std: 0.2
-  learnable_std: false
-  ent_coef: 0.0
+  init_std: 0.1
+  learnable_std: true
+  ent_coef: 0.002
   vf_coef: 0.5
   max_grad_norm: 0.5
-  activation: tanh
+  activation: swish
   anneal_lr: false
-  weight_decay: 0.0
+  weight_decay: 1e-4
   normalize_env: true
   debug: false
-  n_seeds: 1  # will automatically take seeds from 1 to n_seeds
+  n_seeds: 1
   vmap_across_seeds: true
   validation:
     active: true
-    num_steps: 100
+    num_steps: 300
     num_envs: 100
-    num: 10 # set to 0 to disable validation
-    # if none of the following is set, only the mean reward and episode length is logged
-    quantities: # quantities to be used for the distance measures below
+    num: 10
+    quantities:
       - JointPosition
       - JointVelocity
       - RelSitePosition
@@ -116,6 +249,16 @@ experiment:
       - left_foot_mimic
       - right_hand_mimic
       - right_foot_mimic
+      - left_thumb_mimic
+      - left_index_mimic
+      - left_middle_mimic
+      - left_ring_mimic
+      - left_little_mimic
+      - right_thumb_mimic
+      - right_index_mimic
+      - right_middle_mimic
+      - right_ring_mimic
+      - right_little_mimic
     joints_to_ignore:
       - ball_joint
       - pelvis_tx
@@ -125,10 +268,9 @@ experiment:
       - pelvis_list
       - pelvis_rotation
 
-# Define control subconfigs
 control_config:
   position_control:
-    control_type: PDControl
+    control_type: DefaultControl
     control_params:
       p_gain:
         - 200 # left_hip_pitch_joint
@@ -240,4 +382,4 @@ control_config:
         # - 1 # right_little_2_joint
   torque_control:
     control_type: DefaultControl
-    control_params:
+    control_params: {}

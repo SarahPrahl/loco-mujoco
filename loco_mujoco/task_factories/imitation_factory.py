@@ -252,6 +252,9 @@ class ImitationFactory(TaskFactory):
             
         env_name = env.__class__.__name__
 
+        if "Mjx" in env_name:                                 # dont know what this does
+           env_name = env_name.replace("Mjx", "")             # same
+
         # Load LAFAN1 Trajectory
         traj = load_lafan1_trajectory(env_name, dataset_paths)
 

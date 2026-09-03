@@ -25,16 +25,19 @@ factory = TaskFactory.get_factory_cls(config.experiment.task_factory.name)
 
 # create env
 OmegaConf.set_struct(config, False)  # Allow modifications
-config.experiment.env_params["headless"] = False
+
+config.experiment.env_params["headless"] = True # For working on the workstation true, else can be false
+# config.experiment.env_params["goal_type"] = "GoalTrajMimicv2"   # nicer looking than GoalTrajMimic
+# config.experiment.env_params["headless"] = False  
 # config.experiment.env_params["goal_type"] = "GoalTrajMimicv2"   # nicer looking than GoalTrajMimic # not compatible with observation space!
 env = factory.make(**config.experiment.env_params, **config.experiment.task_factory.params)
 
 # Determine which evaluation environment to run
 if args.use_mujoco:
     # run eval mujoco
-    PPOJax.play_policy_mujoco(env, agent_conf, agent_state, deterministic=False, n_steps=10000, record=True,
+    PPOJax.play_policy_mujoco(env, agent_conf, agent_state, deterministic=True, n_steps=10000, record=True,
                               train_state_seed=0)
 else:
     # run eval mjx
-    PPOJax.play_policy(env, agent_conf, agent_state, deterministic=False, n_steps=10000, n_envs=1, record=True,
+    PPOJax.play_policy(env, agent_conf, agent_state, deterministic=True, n_steps=10000, n_envs=1, record=True,
                        train_state_seed=0)

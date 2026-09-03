@@ -423,7 +423,7 @@ class UnitreeG1Inspire(BaseRobotHumanoid):
                             ObservationType.JointPos("q_right_little_1_joint", xml_name="right_little_1_joint"),
                             ObservationType.JointPos("q_right_little_2_joint", xml_name="right_little_2_joint"),
 
-                            # # ------------- JOINT VEL -------------
+                            # ------------- JOINT VEL -------------
                             ObservationType.FreeJointVel("dq_root", xml_name="root"),
                             ObservationType.JointVel("dq_left_hip_pitch_joint", xml_name="left_hip_pitch_joint"),
                             ObservationType.JointVel("dq_left_hip_roll_joint", xml_name="left_hip_roll_joint"),
