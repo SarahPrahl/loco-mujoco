@@ -251,8 +251,9 @@ class ImitationFactory(TaskFactory):
                 else [lafan1_dataset_conf.dataset_name]
             
         env_name = env.__class__.__name__
-        if "Mjx" in env_name:
-            env_name = env_name.replace("Mjx", "")
+
+        if "Mjx" in env_name:                                 # dont know what this does
+           env_name = env_name.replace("Mjx", "")             # same
 
         # Load LAFAN1 Trajectory
         traj = load_lafan1_trajectory(env_name, dataset_paths)
@@ -280,9 +281,21 @@ class ImitationFactory(TaskFactory):
         if "Mjx" in env_name:
             env_name = env_name.replace("Mjx", "")
 
+        file_paths = []
+        
+        if custom_dataset_conf.paths is not None:
+            file_paths = custom_dataset_conf.paths
+        if custom_dataset_conf.directory is not None:
+            if os.path.isdir(custom_dataset_conf.directory):
+                for file in os.listdir(custom_dataset_conf.directory):
+                    if file.endswith(".npz"):
+                        file_paths.append(os.path.join(custom_dataset_conf.directory, file))
+            else:
+                raise ValueError(f"Invalid directory path: {custom_dataset_conf.directory}")
+        
         trajs = []
         # load each trajectory from the provided paths and concatenate them
-        for file_path in custom_dataset_conf.paths:
+        for file_path in file_paths:
 
             traj = Trajectory.load(file_path)
 

@@ -11,8 +11,9 @@ experiment:
     name: ImitationFactory
     params:
       custom_dataset_conf:
-        paths:
-          - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/4_merged_filtered.npz
+        directory: /home/sarah/pg/mujoco/mocap_data/npz_27_07_26_and_03_08_26
+        # paths:
+        #   - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/4_merged_filtered.npz
       domain_randomization_type: DefaultRandomizer
       domain_randomization_params:
         randomize_gravity: true
@@ -52,7 +53,7 @@ experiment:
         add_free_joint_ang_vel_noise: false
         ang_vel_noise_scale: 0.02
   env_params:
-    env_name: MjxUnitreeG1Inspire
+    env_name: MjxUnitreeG1BallInspire
     use_mjwarp: True
     nconmax: 32000
     headless: True
@@ -139,8 +140,18 @@ experiment:
       sites_for_mimic:
         - upper_body_mimic
         - left_hand_mimic
+        - left_thumb_mimic
+        - left_index_mimic
+        - left_middle_mimic
+        - left_ring_mimic
+        - left_little_mimic
         - left_foot_mimic
         - right_hand_mimic
+        - right_thumb_mimic
+        - right_index_mimic
+        - right_middle_mimic
+        - right_ring_mimic
+        - right_little_mimic
         - right_foot_mimic
         - left_thumb_mimic
         - left_index_mimic
@@ -249,6 +260,7 @@ experiment:
       - right_ring_mimic
       - right_little_mimic
     joints_to_ignore:
+      - ball_joint
       - pelvis_tx
       - pelvis_tz
       - pelvis_ty
@@ -260,8 +272,114 @@ control_config:
   position_control:
     control_type: DefaultControl
     control_params:
-      center_on_default_pose: true
-
+      p_gain:
+        - 200 # left_hip_pitch_joint
+        - 200 # left_hip_roll_joint
+        - 200 # left_hip_yaw_joint
+        - 300 # left_knee_joint
+        - 40 # left_ankle_pitch_joint
+        - 40 # left_ankle_roll_joint
+        - 200 # right_hip_pitch_joint
+        - 200 # right_hip_roll_joint
+        - 200 # right_hip_yaw_joint
+        - 300 # right_knee_joint
+        - 40 # right_ankle_pitch_joint
+        - 40 # right_ankle_roll_joint
+        - 100 # waist_yaw_joint
+        - 100 # waist_roll_joint
+        - 100 # waist_pitch_joint
+        - 100 # left_shoulder_pitch_joint
+        - 100 # left_shoulder_roll_joint
+        - 100 # left_shoulder_yaw_joint
+        - 100 # left_elbow_joint
+        - 50 # left_wrist_roll_joint
+        - 50 # left_wrist_pitch_joint
+        - 50 # left_wrist_yaw_joint
+        - 10 # left_thumb_1_joint
+        - 10 # left_thumb_2_joint
+        # - 10 # left_thumb_3_joint
+        # - 10 # left_thumb_4_joint
+        - 10 # left_index_1_joint
+        # - 10 # left_index_2_joint
+        - 10 # left_middle_1_joint
+        # - 10 # left_middle_2_joint
+        - 10 # left_ring_1_joint
+        # - 10 # left_ring_2_joint
+        - 10 # left_little_1_joint
+        # - 10 # left_little_2_joint
+        - 100 # right_shoulder_pitch_joint
+        - 100 # right_shoulder_roll_joint
+        - 100 # right_shoulder_yaw_joint
+        - 100 # right_elbow_joint
+        - 50 # right_wrist_roll_joint
+        - 50 # right_wrist_pitch_joint
+        - 50 # right_wrist_yaw_joint
+        - 10 # right_thumb_1_joint
+        - 10 # right_thumb_2_joint
+        # - 10 # right_thumb_3_joint
+        # - 10 # right_thumb_4_joint
+        - 10 # right_index_1_joint
+        # - 10 # right_index_2_joint
+        - 10 # right_middle_1_joint
+        # - 10 # right_middle_2_joint
+        - 10 # right_ring_1_joint
+        # - 10 # right_ring_2_joint
+        - 10 # right_little_1_joint
+        # - 10 # right_little_2_joint
+      d_gain:
+        - 5 # left_hip_pitch_joint
+        - 5 # left_hip_roll_joint
+        - 5 # left_hip_yaw_joint
+        - 6 # left_knee_joint
+        - 2 # left_ankle_pitch_joint
+        - 2 # left_ankle_roll_joint
+        - 5 # right_hip_pitch_joint
+        - 5 # right_hip_roll_joint
+        - 5 # right_hip_yaw_joint
+        - 6 # right_knee_joint
+        - 2 # right_ankle_pitch_joint
+        - 2 # right_ankle_roll_joint
+        - 2 # waist_yaw_joint
+        - 2 # waist_roll_joint
+        - 2 # waist_pitch_joint
+        - 2 # left_shoulder_pitch_joint
+        - 2 # left_shoulder_roll_joint
+        - 2 # left_shoulder_yaw_joint
+        - 2 # left_elbow_joint
+        - 2 # left_wrist_roll_joint
+        - 2 # left_wrist_pitch_joint
+        - 2 # left_wrist_yaw_joint
+        - 1 # left_thumb_1_joint
+        - 1 # left_thumb_2_joint
+        # - 1 # left_thumb_3_joint
+        # - 1 # left_thumb_4_joint
+        - 1 # left_index_1_joint
+        # - 1 # left_index_2_joint
+        - 1 # left_middle_1_joint
+        # - 1 # left_middle_2_joint
+        - 1 # left_ring_1_joint
+        # - 1 # left_ring_2_joint
+        - 1 # left_little_1_joint
+        # - 1 # left_little_2_joint
+        - 2 # right_shoulder_pitch_joint
+        - 2 # right_shoulder_roll_joint
+        - 2 # right_shoulder_yaw_joint
+        - 2 # right_elbow_joint
+        - 2 # right_wrist_roll_joint
+        - 2 # right_wrist_pitch_joint
+        - 2 # right_wrist_yaw_joint
+        - 1 # right_thumb_1_joint
+        - 1 # right_thumb_2_joint
+        # - 1 # right_thumb_3_joint
+        # - 1 # right_thumb_4_joint
+        - 1 # right_index_1_joint
+        # - 1 # right_index_2_joint
+        - 1 # right_middle_1_joint
+        # - 1 # right_middle_2_joint
+        - 1 # right_ring_1_joint
+        # - 1 # right_ring_2_joint
+        - 1 # right_little_1_joint
+        # - 1 # right_little_2_joint
   torque_control:
     control_type: DefaultControl
     control_params: {}

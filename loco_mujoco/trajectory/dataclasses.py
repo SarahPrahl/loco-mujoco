@@ -629,6 +629,10 @@ class SingleData:
     qpos: Union[jax.Array, np.ndarray]
     qvel: Union[jax.Array, np.ndarray]
 
+    # ball properties
+    ball_pos: Union[jax.Array, np.ndarray]  = struct.field(default_factory=lambda: jnp.empty(0))
+    ball_quat: Union[jax.Array, np.ndarray]  = struct.field(default_factory=lambda: jnp.empty(0))
+
     # global body properties
     xpos: Union[jax.Array, np.ndarray] = struct.field(default_factory=lambda: jnp.empty(0))
     xquat: Union[jax.Array, np.ndarray] = struct.field(default_factory=lambda: jnp.empty(0))
@@ -707,7 +711,9 @@ class TrajectoryData(SingleData):
             cvel=backend.squeeze(self.cvel[ind].copy()) if self.cvel.size > 0 else backend.empty((1, 0)),
             subtree_com=backend.squeeze(self.subtree_com[ind].copy()) if self.subtree_com.size > 0 else backend.empty((1, 0)),
             site_xpos=backend.squeeze(self.site_xpos[ind].copy()) if self.site_xpos.size > 0 else backend.empty((1, 0)),
-            site_xmat=backend.squeeze(self.site_xmat[ind].copy()) if self.site_xmat.size > 0 else backend.empty((1, 0))
+            site_xmat=backend.squeeze(self.site_xmat[ind].copy()) if self.site_xmat.size > 0 else backend.empty((1, 0)),
+            ball_pos=backend.squeeze(self.xpos[ind].copy()) if self.xpos.size > 0 else backend.empty((1, 0)),
+            ball_quat=backend.squeeze(self.xquat[ind].copy()) if self.xquat.size > 0 else backend.empty((1, 0))
         )
 
     @classmethod
@@ -1026,6 +1032,8 @@ class TrajectoryData(SingleData):
         new_traj_data = TrajectoryData(
             qpos=backend.concatenate([data.qpos for data in traj_datas], axis=0),
             qvel=backend.concatenate([data.qvel for data in traj_datas], axis=0),
+            ball_pos=backend.concatenate([data.ball_pos for data in traj_datas], axis=0),
+            ball_quat=backend.concatenate([data.ball_quat for data in traj_datas], axis=0),
             xpos=backend.concatenate([data.xpos for data in traj_datas], axis=0),
             xquat=backend.concatenate([data.xquat for data in traj_datas], axis=0),
             cvel=backend.concatenate([data.cvel for data in traj_datas], axis=0),
@@ -1183,6 +1191,8 @@ def interpolate_trajectories(traj_data: TrajectoryData, traj_info: TrajectoryInf
         traj_data_slice = traj_data_slice.replace(
             qpos=qpos,
             qvel=qvel_interpolated,
+            ball_pos=interp1d(x, traj_data_slice.ball_pos, kind="cubic", axis=0)(x_new),
+            ball_quat=slerp_batch(traj_data_slice.ball_quat, x, x_new),
             xpos=xpos_interpolated,
             xquat=xquat_interpolated,
             cvel=cvel_interpolated,

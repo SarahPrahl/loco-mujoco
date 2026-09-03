@@ -535,8 +535,12 @@ class MujocoViewer:
                 offset = self._offsets_for_parallel_render[i]
                 data.qpos, data.qvel = mjx_state.data.qpos[i, :], mjx_state.data.qvel[i, :]
                 data.mocap_pos, data.mocap_quat = mjx_state.data.mocap_pos[i, :], mjx_state.data.mocap_quat[i, :]
-                data.qpos[0] += offset[0]
-                data.qpos[1] += offset[1]
+                # apply offset to free joints and mocap positions
+                for j in range(self._model.njnt):
+                    if self._model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+                        qpos_adr = self._model.jnt_qposadr[j]
+                        data.qpos[qpos_adr:qpos_adr + 2] += offset
+
                 data.mocap_pos[:, 0] += offset[0]
                 data.mocap_pos[:, 1] += offset[1]
                 mujoco.mj_forward(self._model, data)

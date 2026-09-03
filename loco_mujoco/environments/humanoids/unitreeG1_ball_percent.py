@@ -10,13 +10,13 @@ from loco_mujoco.environments.humanoids.base_robot_humanoid import BaseRobotHuma
 from loco_mujoco.core. utils import info_property
 
 
-class UnitreeG1BallInspire(BaseRobotHumanoid):
+class UnitreeG1BallPercent(BaseRobotHumanoid):
 
     """
     Description
     ------------
 
-    Mujoco environment of the Unitree G1 robot with inspire hands.
+    Mujoco environment of the Unitree G1 robot with inspire hands, that are controlled by a closing percentage.
 
 
     Default Observation Space
@@ -145,7 +145,7 @@ class UnitreeG1BallInspire(BaseRobotHumanoid):
     ============ ============================= ================ ==================================== ============================== ===
     Index in Act Name                          Type             Min                                  Max                            Dim
     ============ ============================= ================ ==================================== ============================== ===
-    0            q_left_hip_pitch_joint        JointPos         -2.5307                              2.8798                         1 
+   0            q_left_hip_pitch_joint        JointPos         -2.5307                              2.8798                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
     1            q_left_hip_roll_joint         JointPos         -0.5236                              2.9671                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
@@ -191,65 +191,25 @@ class UnitreeG1BallInspire(BaseRobotHumanoid):
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
     22           q_left_thumb_1_joint          JointPos         0                                    1.1641                         1
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    23           q_left_thumb_2_joint          JointPos         0                                    0.5864                         1 
+    23           q_left_index_1_joint          JointPos         0                                    1.4381                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    24           q_left_thumb_3_joint          JointPos         0                                    0.5                            1 
+    24           q_right_shoulder_pitch_joint  JointPos         -3.0892                              2.6704                         1
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    25           q_left_thumb_4_joint          JointPos         0                                    3.14                           1 
+    25           q_right_shoulder_roll_joint   JointPos         -2.2515                              1.5882                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    26           q_left_index_1_joint          JointPos         0                                    1.4381                         1 
+    26           q_right_shoulder_yaw_joint    JointPos         -2.618                               2.618                          1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    27           q_left_index_2_joint          JointPos         0                                    3.14                           1 
+    27           q_right_elbow_joint           JointPos         -1.0472                              2.0944                         1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    28           q_left_middle_1_joint         JointPos         0                                    1.4381                         1
+    28           q_right_wrist_roll_joint      JointPos         -1.97222                             1.97222                        1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    29           q_left_middle_2_joint         JointPos         0                                    3.14                           1
+    29           q_right_wrist_pitch_joint     JointPos         -1.61443                             1.61443                        1
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    30           q_left_ring_1_joint           JointPos         0                                    1.4381                         1 
+    30           q_right_wrist_yaw_joint       JointPos         -1.61443                             1.61443                        1 
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    31           q_left_ring_2_joint           JointPos         0                                    3.14                           1 
+    31           q_right_thumb_1_joint         JointPos         0                                    1.1641                         1
     ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    32           q_left_little_1_joint         JointPos         0                                    1.4381                         1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    33           q_left_little_2_joint         JointPos         0                                    3.14                           1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    34           q_right_shoulder_pitch_joint  JointPos         -3.0892                              2.6704                         1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    35           q_right_shoulder_roll_joint   JointPos         -2.2515                              1.5882                         1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    36           q_right_shoulder_yaw_joint    JointPos         -2.618                               2.618                          1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    37           q_right_elbow_joint           JointPos         -1.0472                              2.0944                         1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    38           q_right_wrist_roll_joint      JointPos         -1.97222                             1.97222                        1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    39           q_right_wrist_pitch_joint     JointPos         -1.61443                             1.61443                        1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    40           q_right_wrist_yaw_joint       JointPos         -1.61443                             1.61443                        1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    41           q_right_thumb_1_joint         JointPos         0                                    1.1641                         1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    42           q_right_thumb_2_joint         JointPos         0                                    0.5864                         1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    43           q_right_thumb_3_joint         JointPos         0                                    0.5                            1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    44           q_right_thumb_4_joint         JointPos         0                                    3.14                           1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    45           q_right_index_1_joint         JointPos         0                                    1.4381                         1 
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    46           q_right_index_2_joint         JointPos         0                                    3.14                           1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    47           q_right_middle_1_joint        JointPos         0                                    1.4381                         1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    48           q_right_middle_2_joint        JointPos         0                                    3.14                           1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    49           q_right_ring_1_joint          JointPos         0                                    1.4381                         1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    50           q_right_ring_2_joint          JointPos         0                                    3.14                           1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    51           q_right_little_1_joint        JointPos         0                                    1.4381                         1
-    ------------ ----------------------------- ---------------- ------------------------------------ ------------------------------ ---
-    52           q_right_little_2_joint        JointPos         0                                    3.14                           1
+    32           q_right_index_1_joint         JointPos         0                                    1.4381                         1
     ============ ============================= ================ ==================================== ============================== ===
 
     Methods
@@ -338,14 +298,10 @@ class UnitreeG1BallInspire(BaseRobotHumanoid):
                                  "left_ring_1_joint", "left_ring_2_joint", "left_little_1_joint", "left_little_2_joint"]
             motors_to_remove += ["right_shoulder_pitch_joint", "right_shoulder_roll_joint", "right_shoulder_yaw_joint", "right_elbow_joint",
                                  "right_wrist_roll_joint", "right_wrist_pitch_joint", "right_wrist_yaw_joint",
-                                 "right_thumb_1_joint", "right_thumb_2_joint", "right_thumb_3_joint", "right_thumb_4_joint",
-                                 "right_index_1_joint", "right_index_2_joint", "right_middle_1_joint", "right_middle_2_joint",
-                                 "right_ring_1_joint", "right_ring_2_joint", "right_little_1_joint", "right_little_2_joint",
+                                 "right_thumb_1_joint", "right_index_1_joint",
                                  "left_shoulder_pitch_joint", "left_shoulder_roll_joint", "left_shoulder_yaw_joint", "left_elbow_joint", 
                                  "left_wrist_roll_joint", "left_wrist_pitch_joint", "left_wrist_yaw_joint",
-                                 "left_thumb_1_joint", "left_thumb_2_joint", "left_thumb_3_joint", "left_thumb_4_joint",
-                                 "left_index_1_joint", "left_index_2_joint", "left_middle_1_joint", "left_middle_2_joint",
-                                 "left_ring_1_joint", "left_ring_2_joint", "left_little_1_joint", "left_little_2_joint"]
+                                 "left_thumb_1_joint", "left_index_1_joint"]
             
 
         if self._disable_back_joint:
@@ -533,7 +489,7 @@ class UnitreeG1BallInspire(BaseRobotHumanoid):
         """
         Returns the default XML file path for the Unitree G1 environment.
         """
-        xml_file = "robot_models_new/scene_inspire_hand_ball_body.xml"
+        xml_file = "robot_models_new/scene_percent_hand_ball_body.xml"
         model_path = os.path.join(os.getcwd().removesuffix("/loco-mujoco/loco_mujoco/environments/humanoids"), xml_file)
         return model_path
 

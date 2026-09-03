@@ -73,9 +73,11 @@ class CustomDatasetConf:
 
     Attributes:
         paths (Union[str, list]): A list of paths to custom trajectory files to load.
+        directory (str): Path to a directory containing custom trajectory files that will all be loaded.
 
     """
-    paths: Union[str, list]
+    paths: Union[str, list] = None
+    directory: str = None
 
     def __post_init__(self):
-        assert self.paths is not None, "The `paths` attribute must be set."
+        assert self.paths is not None or self.directory is not None, "The `paths` or `directory` attribute must be set."
