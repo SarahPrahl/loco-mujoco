@@ -89,12 +89,12 @@ experiment:
       - EuclideanDistance
       - DynamicTimeWarping
       - DiscreteFrechetDistance
-    # rel_site_names:
-    #   - upper_body_mimic
-    #   - left_hand_mimic
-    #   - left_foot_mimic
-    #   - right_hand_mimic
-    #   - right_foot_mimic
+    rel_site_names:
+      - upper_body_mimic
+      - left_hand_mimic
+      - left_foot_mimic
+      - right_hand_mimic
+      - right_foot_mimic
     joints_to_ignore:
       - pelvis_tx
       - pelvis_tz
