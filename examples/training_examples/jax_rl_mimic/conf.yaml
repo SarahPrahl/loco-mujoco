@@ -24,10 +24,20 @@ experiment:
     name: ImitationFactory
     params:
       custom_dataset_conf:
-        paths:
-          - /home/sarah/pg/mujoco/mocap_data/npz/40_merged_filtered.npz
+        directory: /home/sarah/pg/mujoco/mocap_data/npz_27_07_26_and_03_08_26
+        # paths:
+          # - /home/sarah/pg/mujoco/mocap_data/npz/18_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/19_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/21_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/25_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/28_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/29_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/30_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/31_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/35_merged_filtered.npz
+          # - /home/sarah/pg/mujoco/mocap_data/npz/40_merged_filtered.npz
   env_params:
-    env_name: MjxUnitreeG1Inspire
+    env_name: MjxUnitreeG1BallInspire
     # disable_arms: True
     use_mjwarp: True
     nconmax: 7000
@@ -145,16 +155,16 @@ control_config:
         - 50 # left_wrist_yaw_joint
         - 10 # left_thumb_1_joint
         - 10 # left_thumb_2_joint
-        - 10 # left_thumb_3_joint
-        - 10 # left_thumb_4_joint
+        # - 10 # left_thumb_3_joint
+        # - 10 # left_thumb_4_joint
         - 10 # left_index_1_joint
-        - 10 # left_index_2_joint
+        # - 10 # left_index_2_joint
         - 10 # left_middle_1_joint
-        - 10 # left_middle_2_joint
+        # - 10 # left_middle_2_joint
         - 10 # left_ring_1_joint
-        - 10 # left_ring_2_joint
+        # - 10 # left_ring_2_joint
         - 10 # left_little_1_joint
-        - 10 # left_little_2_joint
+        # - 10 # left_little_2_joint
         - 100 # right_shoulder_pitch_joint
         - 100 # right_shoulder_roll_joint
         - 100 # right_shoulder_yaw_joint
@@ -164,16 +174,16 @@ control_config:
         - 50 # right_wrist_yaw_joint
         - 10 # right_thumb_1_joint
         - 10 # right_thumb_2_joint
-        - 10 # right_thumb_3_joint
-        - 10 # right_thumb_4_joint
+        # - 10 # right_thumb_3_joint
+        # - 10 # right_thumb_4_joint
         - 10 # right_index_1_joint
-        - 10 # right_index_2_joint
+        # - 10 # right_index_2_joint
         - 10 # right_middle_1_joint
-        - 10 # right_middle_2_joint
+        # - 10 # right_middle_2_joint
         - 10 # right_ring_1_joint
-        - 10 # right_ring_2_joint
+        # - 10 # right_ring_2_joint
         - 10 # right_little_1_joint
-        - 10 # right_little_2_joint
+        # - 10 # right_little_2_joint
       d_gain:
         - 5 # left_hip_pitch_joint
         - 5 # left_hip_roll_joint
@@ -199,16 +209,16 @@ control_config:
         - 2 # left_wrist_yaw_joint
         - 1 # left_thumb_1_joint
         - 1 # left_thumb_2_joint
-        - 1 # left_thumb_3_joint
-        - 1 # left_thumb_4_joint
+        # - 1 # left_thumb_3_joint
+        # - 1 # left_thumb_4_joint
         - 1 # left_index_1_joint
-        - 1 # left_index_2_joint
+        # - 1 # left_index_2_joint
         - 1 # left_middle_1_joint
-        - 1 # left_middle_2_joint
+        # - 1 # left_middle_2_joint
         - 1 # left_ring_1_joint
-        - 1 # left_ring_2_joint
+        # - 1 # left_ring_2_joint
         - 1 # left_little_1_joint
-        - 1 # left_little_2_joint
+        # - 1 # left_little_2_joint
         - 2 # right_shoulder_pitch_joint
         - 2 # right_shoulder_roll_joint
         - 2 # right_shoulder_yaw_joint
@@ -218,16 +228,16 @@ control_config:
         - 2 # right_wrist_yaw_joint
         - 1 # right_thumb_1_joint
         - 1 # right_thumb_2_joint
-        - 1 # right_thumb_3_joint
-        - 1 # right_thumb_4_joint
+        # - 1 # right_thumb_3_joint
+        # - 1 # right_thumb_4_joint
         - 1 # right_index_1_joint
-        - 1 # right_index_2_joint
+        # - 1 # right_index_2_joint
         - 1 # right_middle_1_joint
-        - 1 # right_middle_2_joint
+        # - 1 # right_middle_2_joint
         - 1 # right_ring_1_joint
-        - 1 # right_ring_2_joint
+        # - 1 # right_ring_2_joint
         - 1 # right_little_1_joint
-        - 1 # right_little_2_joint
+        # - 1 # right_little_2_joint
   torque_control:
     control_type: DefaultControl
     control_params:
