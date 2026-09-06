@@ -13,7 +13,7 @@ experiment:
       custom_dataset_conf:
         directory: /home/sarah/pg/mujoco/mocap_data/npz_27_07_26_and_03_08_26
         # paths:
-        #   - /home/andy/work/gitlab/mujoco/mocap_data/npz/27_07_2026_fixed/4_merged_filtered.npz
+        #   - /home/sarah/pg/mujoco/mocap_data/npz_03_08_26/1_merged_filtered.npz
       domain_randomization_type: DefaultRandomizer
       domain_randomization_params:
         randomize_gravity: true
@@ -55,19 +55,19 @@ experiment:
   env_params:
     env_name: MjxUnitreeG1BallInspire
     use_mjwarp: True
-    nconmax: 32000
+    nconmax: 7000
     headless: True
-    horizon: 3000
+    horizon: 1000
     terminal_state_type: RootPoseTrajTerminalStateHandler
     terminal_state_params:
       root_height_margin: 0.2     # Increased from 0.15 to allow slightly more height variance
       root_rot_margin_degrees: 45.0
       max_root_pos_deviation: 0.8  # Increased to 0.8 to allow longer recovery rollouts
-    goal_type: GoalTrajMimic
-    goal_params:
-      visualize_goal: true
-    control_type: ${control_config.position_control.control_type}
-    control_params: ${control_config.position_control.control_params}
+    # goal_type: GoalTrajMimic
+    # goal_params:
+    #   visualize_goal: true
+    control_type: ${control_config.torque_control.control_type}
+    control_params: ${control_config.torque_control.control_params}
     reward_type: MimicReward
     reward_params:
       action_rate_coeff: 0.0005
@@ -205,23 +205,23 @@ experiment:
         - right_middle_mimic
         - right_ring_mimic
         - right_little_mimic
-  hidden_layers: [1024, 1024, 512]
+  hidden_layers: [512, 256]
   lr: 1e-4
   num_envs: 2048
-  num_steps: 100
-  total_timesteps: 400e6
+  num_steps: 200
+  total_timesteps: 300e6
   update_epochs: 4
   proportion_env_reward: 0.0
   num_minibatches: 32
   gamma: 0.99
   gae_lambda: 0.95
   clip_eps: 0.2
-  init_std: 0.1
-  learnable_std: true
-  ent_coef: 0.002
+  init_std: 0.2
+  learnable_std: false
+  ent_coef: 0.0
   vf_coef: 0.5
   max_grad_norm: 0.5
-  activation: swish
+  activation: tanh
   anneal_lr: false
   weight_decay: 1e-4
   normalize_env: true
@@ -230,7 +230,7 @@ experiment:
   vmap_across_seeds: true
   validation:
     active: true
-    num_steps: 300
+    num_steps: 100
     num_envs: 100
     num: 10
     quantities:
@@ -297,16 +297,10 @@ control_config:
         - 50 # left_wrist_yaw_joint
         - 10 # left_thumb_1_joint
         - 10 # left_thumb_2_joint
-        # - 10 # left_thumb_3_joint
-        # - 10 # left_thumb_4_joint
         - 10 # left_index_1_joint
-        # - 10 # left_index_2_joint
         - 10 # left_middle_1_joint
-        # - 10 # left_middle_2_joint
         - 10 # left_ring_1_joint
-        # - 10 # left_ring_2_joint
         - 10 # left_little_1_joint
-        # - 10 # left_little_2_joint
         - 100 # right_shoulder_pitch_joint
         - 100 # right_shoulder_roll_joint
         - 100 # right_shoulder_yaw_joint
@@ -316,16 +310,10 @@ control_config:
         - 50 # right_wrist_yaw_joint
         - 10 # right_thumb_1_joint
         - 10 # right_thumb_2_joint
-        # - 10 # right_thumb_3_joint
-        # - 10 # right_thumb_4_joint
         - 10 # right_index_1_joint
-        # - 10 # right_index_2_joint
         - 10 # right_middle_1_joint
-        # - 10 # right_middle_2_joint
         - 10 # right_ring_1_joint
-        # - 10 # right_ring_2_joint
         - 10 # right_little_1_joint
-        # - 10 # right_little_2_joint
       d_gain:
         - 5 # left_hip_pitch_joint
         - 5 # left_hip_roll_joint
@@ -351,16 +339,10 @@ control_config:
         - 2 # left_wrist_yaw_joint
         - 1 # left_thumb_1_joint
         - 1 # left_thumb_2_joint
-        # - 1 # left_thumb_3_joint
-        # - 1 # left_thumb_4_joint
         - 1 # left_index_1_joint
-        # - 1 # left_index_2_joint
         - 1 # left_middle_1_joint
-        # - 1 # left_middle_2_joint
         - 1 # left_ring_1_joint
-        # - 1 # left_ring_2_joint
         - 1 # left_little_1_joint
-        # - 1 # left_little_2_joint
         - 2 # right_shoulder_pitch_joint
         - 2 # right_shoulder_roll_joint
         - 2 # right_shoulder_yaw_joint
@@ -370,16 +352,10 @@ control_config:
         - 2 # right_wrist_yaw_joint
         - 1 # right_thumb_1_joint
         - 1 # right_thumb_2_joint
-        # - 1 # right_thumb_3_joint
-        # - 1 # right_thumb_4_joint
         - 1 # right_index_1_joint
-        # - 1 # right_index_2_joint
         - 1 # right_middle_1_joint
-        # - 1 # right_middle_2_joint
         - 1 # right_ring_1_joint
-        # - 1 # right_ring_2_joint
         - 1 # right_little_1_joint
-        # - 1 # right_little_2_joint
   torque_control:
     control_type: DefaultControl
     control_params: {}
