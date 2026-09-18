@@ -45,6 +45,7 @@ class MjxState:
     absorbing: bool
     done: bool
     additional_carry: MjxAdditionalCarry
+    rng: jax.Array
     info: Dict[str, Any] = struct.field(default_factory=dict)
 
 
@@ -88,8 +89,10 @@ class Mjx(Mujoco):
             self.sys = mjx.put_model(self._model, impl='warp')
             self._first_data = mjx.make_data(self._model, impl='warp', nconmax=nconmax, njmax=njmax)
         else:
+            self._model.opt.jacobian = mujoco.mjtJacobian.mjJAC_DENSE
             self.sys = mjx.put_model(self._model)
-            self._first_data = mjx.put_data(self._model, self._data)
+            self._first_data = mjx.put_data(self._model, self._data,
+                                            nconmax=nconmax, njmax=njmax)
 
     def mjx_reset(self, key: jax.random.PRNGKey) -> MjxState:
         """
@@ -110,7 +113,7 @@ class Mjx(Mujoco):
 
         carry = self._init_additional_carry(key, self._model, data, jnp)
 
-        data, carry = self._mjx_reset_carry(self.sys, data, carry)
+        data, carry = self._mjx_reset_carry(self.sys, data, carry, subkey)
 
         # reset all stateful entities
         data, carry = self.obs_container.reset_state(self, self._model, data, carry, jnp)
@@ -122,7 +125,7 @@ class Mjx(Mujoco):
         info = self._mjx_reset_info_dictionary(obs, data, subkey)
 
         return MjxState(data=data, observation=obs, reward=reward, absorbing=absorbing, done=done,
-                        info=info, additional_carry=carry)
+                info=info, additional_carry=carry, rng=key)
 
     def _mjx_reset_in_step(self, state: MjxState) -> MjxState:
         """
@@ -148,7 +151,8 @@ class Mjx(Mujoco):
         else:
             data = self._first_data
 
-        data, carry = self._mjx_reset_carry(self.sys, data, carry)
+        reset_key, next_key = jax.random.split(state.rng)
+        data, carry = self._mjx_reset_carry(self.sys, data, carry, reset_key)
 
         # reset carry
         carry = carry.replace(cur_step_in_episode=1,
@@ -162,7 +166,7 @@ class Mjx(Mujoco):
         # create new observation
         obs, carry = self._mjx_create_observation(self._model, data, carry)
 
-        return state.replace(data=data, observation=obs, additional_carry=carry)
+        return state.replace(data=data, observation=obs, additional_carry=carry, rng=next_key)
 
     def mjx_step(self, state: MjxState, action: jax.Array) -> MjxState:
         """
@@ -435,7 +439,8 @@ class Mjx(Mujoco):
 
     def _mjx_reset_carry(self, model: Model,
                          data: Data,
-                         carry: MjxAdditionalCarry) -> Tuple[Data, MjxAdditionalCarry]:
+                         carry: MjxAdditionalCarry,
+                         key: jax.Array = None) -> Tuple[Data, MjxAdditionalCarry]:
         """
         Resets the additional carry and allows modification to the Mujoco data.
 
@@ -449,7 +454,7 @@ class Mjx(Mujoco):
         """
         data, carry = self._terminal_state_handler.reset(self, model, data, carry, jnp)
         data, carry = self._terrain.reset(self, model, data, carry, jnp)
-        data, carry = self._init_state_handler.reset(self, model, data, carry, jnp)
+        data, carry = self._init_state_handler.reset(self, model, data, carry, jnp, key=key)
         data, carry = self._domain_randomizer.reset(self, model, data, carry, jnp)
         data, carry = self._reward_function.reset(self, model, data, carry, jnp)
         data, carry = self._control_func.reset(self, model, data, carry, jnp)

@@ -168,6 +168,7 @@ class UnitreeG1Ball29(BaseRobotHumanoid):
                  spec: Union[str, MjSpec] = None,
                  observation_spec: List[Observation] = None,
                  actuation_spec: List[str] = None,
+                 rl: bool = False,
                  **kwargs) -> None:
         """
         Constructor.
@@ -179,14 +180,16 @@ class UnitreeG1Ball29(BaseRobotHumanoid):
                 If none is provided, the default XML file is used.
             observation_spec (List[Observation], optional): List defining the observation space. Defaults to None.
             actuation_spec (List[str], optional): List defining the action space. Defaults to None.
+            rl (bool): Whether to use reinforcement learning mode. Defaults to False.
             **kwargs: Additional parameters for the environment.
         """
 
         self._disable_arms = disable_arms
         self._disable_back_joint = disable_back_joint
+        self._rl = rl
 
         if spec is None:
-            spec = self.get_default_xml_file_path()
+            spec = self.get_default_xml_file_path(rl=self._rl)
 
         # load the model specification
         spec = mujoco.MjSpec.from_file(spec) if not isinstance(spec, MjSpec) else spec
@@ -373,11 +376,14 @@ class UnitreeG1Ball29(BaseRobotHumanoid):
         return spec
 
     @classmethod
-    def get_default_xml_file_path(cls) -> str:
+    def get_default_xml_file_path(cls, rl: bool = False) -> str:
         """
         Returns the default XML file path for the Unitree G1 environment.
         """
-        xml_file = "robot_models_new/scene_rubber_hand_ball_body.xml"
+        if rl:
+            xml_file = "robot_models_new/scene_rubber_hand_ball.xml"
+        else:
+            xml_file = "robot_models_new/scene_rubber_hand_ball_body.xml"
         model_path = os.path.join(os.getcwd().removesuffix("/loco-mujoco/loco_mujoco/environments/humanoids"), xml_file)
         return model_path
 
@@ -394,6 +400,46 @@ class UnitreeG1Ball29(BaseRobotHumanoid):
         Returns the name of the upper body in the Mujoco XML file.
         """
         return "torso_link"
+
+    @info_property
+    def foot_geom_names(self) -> List[str]:
+        """
+        Returns the names of the foot geometries.
+
+        Returns:
+            List[str]: The names of the foot geometries.
+        """
+        return ["left_foot_geom" ,"right_foot_geom"]
+
+    @info_property
+    def ball_joint_name(self) -> str:
+        """
+        Returns the name of the ball joint.
+
+        Returns:
+            List[str]: The name of the ball_joint.
+        """
+        return "ball_joint"
+
+    @info_property
+    def ball_geom_name(self) -> str:
+        """
+        Returns the name of the ball geom.
+
+        Returns:
+            List[str]: The name of the ball geom.
+        """
+        return "ball"
+
+    @info_property
+    def palm_geom_names(self) -> List[str]:
+        """
+        Returns the name of the palm geoms.
+
+        Returns:
+            List[str]: The name of the palm geoms.
+        """
+        return ["left_palm", "right_palm"]
 
     @info_property
     def root_height_healthy_range(self) -> Tuple[float, float]:

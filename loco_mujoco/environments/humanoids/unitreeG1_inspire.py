@@ -545,6 +545,16 @@ class UnitreeG1Inspire(BaseRobotHumanoid):
         return "torso_link"
 
     @info_property
+    def foot_geom_names(self) -> List[str]:
+        """
+        Returns the names of the foot geometries.
+
+        Returns:
+            List[str]: The names of the foot geometries.
+        """
+        return ["left_foot_geom" ,"right_foot_geom"]
+
+    @info_property
     def root_height_healthy_range(self) -> Tuple[float, float]:
         """
         Returns the healthy range of the root height.

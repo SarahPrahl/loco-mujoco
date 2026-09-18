@@ -511,3 +511,239 @@ class LocomotionReward(TargetVelocityGoalReward):
         carry = carry.replace(reward_state=reward_state)
 
         return total_reward, carry
+
+
+class CatchReward(Reward):
+
+    """
+    Reward function that computes the reward based on the deviation between the balls position and the hands position.
+    It is also measured how well the ball is held by the hand and if the ball is in contact with the hand. 
+    The reward is computed as a weighted sum of the different reward components.
+    Another goal is to keep the root velocity low, which is also included in the reward function.
+    """
+
+    def __init__(self, env: Any, palm_weight=10.0, finger_weight=1.0, root_vel_weight=0.1,
+                 ball_vel_weight=1.0, contact_weight=1.0, hold_weight=1.0,
+                 action_weight= 1.0,
+                 palm_sum=1.0, finger_sum=1.0, root_vel_sum=1.0,
+                 ball_vel_sum=1.0, contact_sum=1.0, hold_sum=1.0, 
+                 action_sum=1.0, **kwargs):
+        """
+        Initialize the reward function.
+
+        Args:
+            env (Any): The environment instance.
+            palm_weight (float, optional): The weight for the palm reward.
+            finger_weight (float, optional): The weight for the finger reward.
+            root_vel_weight (float, optional): The weight for the root velocity reward.
+            ball_vel_weight (float, optional): The weight for the ball velocity reward.
+            contact_weight (float, optional): The weight for hand-ball contact.
+            palm_sum (float, optional): The sum for the palm reward.
+            finger_sum (float, optional): The sum for the finger reward.
+            root_vel_sum (float, optional): The sum for the root velocity reward.
+            **kwargs (Any): Additional keyword arguments.
+
+        """
+
+        super().__init__(env, **kwargs)
+
+        # Get relevant joint and geom names and positions/velocities/ids
+        self._free_jnt_name = self._info_props["root_free_joint_xml_name"]
+        self._root_pos_idx = np.array(mj_jntname2qposid(self._free_jnt_name, env._model))[:3]
+        self._vel_idx = np.array(mj_jntname2qvelid(self._free_jnt_name, env._model))
+        self._ball_joint_name = self._info_props["ball_joint_name"]
+        self._ball_pos_idx = np.array(mj_jntname2qposid(self._ball_joint_name, env._model))[:3]
+        self._ball_vel_idx = np.array(mj_jntname2qvelid(self._ball_joint_name, env._model))[:3]
+        self._ball_geom_name = self._info_props["ball_geom_name"]
+        self._ball_geom_id = mujoco.mj_name2id(env._model, mujoco.mjtObj.mjOBJ_GEOM, self._ball_geom_name)
+        self._finger_names = self._info_props["finger_geom_names"]
+        self._finger_ids = [mujoco.mj_name2id(env._model, mujoco.mjtObj.mjOBJ_GEOM, name) for name in self._finger_names]
+        self._palm_names = self._info_props["palm_geom_names"]
+        self._palm_ids = [mujoco.mj_name2id(env._model, mujoco.mjtObj.mjOBJ_GEOM, name) for name in self._palm_names]
+
+        # Store the weights and sums for the different reward components
+        self._w_palm = palm_weight
+        self._w_fingers = finger_weight
+        self._w_root_vel = root_vel_weight
+        self._w_ball_vel = ball_vel_weight
+        self._w_contact = contact_weight
+        self._w_hold = hold_weight
+        self._w_action = action_weight
+        self._w_sum_palm = palm_sum
+        self._w_sum_fingers = finger_sum
+        self._w_sum_root_vel = root_vel_sum
+        self._w_sum_ball_vel = ball_vel_sum
+        self._w_sum_contact = contact_sum
+        self._w_sum_hold = hold_sum
+        self._w_sum_action = action_sum
+
+        # # find the goal velocity observation
+        # assert "GoalRandomRootVelocity" in env.obs_container, \
+        #     f"GoalRandomRootVelocity is the required goal for the reward for{self.__class__.__name__}"
+
+        # super().__init__(env, **kwargs)
+
+    @staticmethod
+    def _geom_distance(model: Union[MjModel, Model], data: Union[MjData, Data], geom1: int,
+                        geom2: int, backend: ModuleType) -> Union[float, jax.Array]:
+        """Return a geometry distance compatible with both MuJoCo and MJX data."""
+        if backend == np:
+            return mujoco.mj_geomDistance(model, data, geom1, geom2, 100.0, np.zeros(6))
+
+        center_distance = backend.linalg.norm(data.geom_xpos[geom1] - data.geom_xpos[geom2])
+        return center_distance - model.geom_rbound[geom1] - model.geom_rbound[geom2]
+
+    def ball_to_finger_distance(self, model: Union[MjModel, Model], data: Union[MjData, Data], backend: ModuleType) -> Union[float, jax.Array]:
+        """
+        Computes the distance between the ball and the fingers.
+
+        Args:
+            model (Union[MjModel, Model]): The simulation model.
+            data (Union[MjData, Data]): The simulation data.
+            backend (ModuleType): Backend module used for computation (either numpy or jax.numpy).
+
+        Returns:
+            Union[float, jax.Array]: The distance between the ball and the fingers.
+        """
+        distances = []
+        for finger_id in self._finger_ids:
+            dist = self._geom_distance(model, data, finger_id, self._ball_geom_id, backend)
+            distances.append(dist)
+        return distances
+
+    def ball_to_palm_distance(self, model: Union[MjModel, Model], data: Union[MjData, Data], backend: ModuleType) -> Union[float, jax.Array]:
+        """
+        Computes the distance between the ball and the palm.
+
+        Args:
+            model (Union[MjModel, Model]): The simulation model.
+            data (Union[MjData, Data]): The simulation data.
+            backend (ModuleType): Backend module used for computation (either numpy or jax.numpy).
+
+        Returns:
+            Union[float, jax.Array]: The distance between the ball and the palm.
+        """
+        distances = []
+        for palm_id in self._palm_ids:
+            dist = self._geom_distance(model, data, palm_id, self._ball_geom_id, backend)
+            distances.append(dist)
+        return distances
+
+    def ball_to_root_distance(self, data: Union[MjData, Data], backend: ModuleType) -> Union[float, jax.Array]:
+        """
+        Computes the distance between the ball and the root.
+
+        Args:
+            model (Union[MjModel, Model]): The simulation model.
+            data (Union[MjData, Data]): The simulation data.
+            backend (ModuleType): Backend module used for computation (either numpy or jax.numpy).
+
+        Returns:
+            Union[float, jax.Array]: The distance between the ball and the root.
+        """
+        root_qpos = backend.squeeze(data.qpos[self._root_pos_idx])
+        ball_qpos = backend.squeeze(data.qpos[self._ball_pos_idx])
+        # jax.debug.print("Ball position: {}", ball_qpos)
+        return backend.linalg.norm(root_qpos - ball_qpos)
+
+    def __call__(self,
+                    state: Union[np.ndarray, jnp.ndarray],
+                    action: Union[np.ndarray, jnp.ndarray],
+                    next_state: Union[np.ndarray, jnp.ndarray],
+                    absorbing: bool,
+                    info: Dict[str, Any],
+                    env: Any,
+                    model: Union[MjModel, Model],
+                    data: Union[MjData, Data],
+                    carry: Any,
+                    backend: ModuleType) -> Tuple[float, Any]:
+        """
+        Computes a catching reward based on the distance between the ball and the hand, the velocity of the root, and the contact between the ball and the hand.
+        Torque should remain minimal, so large actions are penalized.
+
+        Args:
+            state (Union[np.ndarray, jnp.ndarray]): Last state.
+            action (Union[np.ndarray, jnp.ndarray]): Applied action.
+            next_state (Union[np.ndarray, jnp.ndarray]): Current state.
+            absorbing (bool): Whether the state is absorbing.
+            info (Dict[str, Any]): Additional information.
+            env (Any): The environment instance.
+            model (Union[MjModel, Model]): The simulation model.
+            data (Union[MjData, Data]): The simulation data.
+            carry (Any): Additional carry.
+            backend (ModuleType): Backend module used for computation (either numpy or jax.numpy).
+
+        Returns:
+            Tuple[float, Any]: The reward for the current transition and the updated carry.
+        """
+        if backend == np:
+            R = np_R
+        else:
+            R = jnp_R
+
+        # jax.debug.print("Root-Ball distance: {}", self.ball_to_root_distance(data, backend))
+
+        # get root orientation
+        root_jnt_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, self._free_jnt_name)
+
+        assert root_jnt_id != -1, f"Joint {self._free_jnt_name} not found in the model."
+        root_jnt_qpos_start_id = model.jnt_qposadr[root_jnt_id]
+        root_qpos = backend.squeeze(data.qpos[root_jnt_qpos_start_id:root_jnt_qpos_start_id+7])
+        root_quat = R.from_quat(quat_scalarfirst2scalarlast(root_qpos[3:7]))
+
+        # get current local vel of root
+        lin_vel_global = backend.squeeze(data.qvel[self._vel_idx])[:3]
+        ang_vel_global = backend.squeeze(data.qvel[self._vel_idx])[3:]
+        lin_vel_local = root_quat.as_matrix().T @ lin_vel_global
+        vel_local = backend.concatenate([lin_vel_local[:2], backend.atleast_1d(ang_vel_global[2])]) # construct vel, x, y and yaw
+
+        # palm_distances = self.ball_to_palm_distance(model, data, backend)
+        # finger_distances = self.ball_to_finger_distance(model, data, backend)
+        # palm_reward = 0.0
+        # for palm_distance in palm_distances:
+        #     palm_reward += backend.exp(-self._w_palm * backend.square(palm_distance))
+        # palm_reward /= len(palm_distances)
+        # finger_reward = 0.0
+        # for finger_distance in finger_distances:
+        #     finger_reward += backend.exp(-self._w_fingers * backend.square(finger_distance))
+        # finger_reward /= len(finger_distances)
+        # total_reward = self._w_sum_palm * palm_reward + self._w_sum_fingers * finger_reward + self._w_sum_root_vel * velocity_reward
+
+        # calculate catching reward
+        velocity_reward = backend.exp(-self._w_root_vel* backend.mean(backend.square(vel_local)))
+        action_reward = backend.exp(-self._w_action* backend.mean(backend.square(action)))
+        palm_distances = backend.stack(self.ball_to_palm_distance(model, data, backend))
+        finger_distances = backend.stack(self.ball_to_finger_distance(model, data, backend))
+
+        # Use backend.where instead of a Python if: JAX cannot convert traced
+        # booleans to Python bools inside jax.jit/vmap.
+        close_to_palm = backend.any(palm_distances <= 1.0)
+        palm_reward = backend.max(backend.exp(-self._w_palm * backend.square(palm_distances)))
+        finger_reward = backend.max(backend.exp(-self._w_fingers * backend.square(finger_distances)))
+
+        # Contact is a useful success signal, while proximity and ball speed provide
+        # gradients before contact and discourage immediately losing the ball.
+        contact_values = [mj_check_collisions(geom_id, self._ball_geom_id, data, backend)
+                          for geom_id in self._palm_ids + self._finger_ids]
+        contact_reward = backend.max(backend.stack(contact_values).astype(float))
+        ball_velocity = backend.squeeze(data.qvel[self._ball_vel_idx])
+        ball_velocity_reward = backend.exp(-self._w_ball_vel * backend.mean(backend.square(ball_velocity)))
+        hold_reward = palm_reward * finger_reward * ball_velocity_reward
+
+        # Check that the ball is close enough to count into the reward
+        palm_reward = backend.where(close_to_palm, palm_reward, 0.0)
+        finger_reward = backend.where(close_to_palm, finger_reward, 0.0)
+        contact_reward = backend.where(close_to_palm, contact_reward, 0.0)
+        ball_velocity_reward = backend.where(close_to_palm, ball_velocity_reward, 0.0)
+        hold_reward = backend.where(close_to_palm, hold_reward, 0.0)
+
+        total_reward = (self._w_sum_palm * palm_reward
+                        + self._w_sum_fingers * finger_reward
+                        + self._w_sum_root_vel * velocity_reward
+                        + self._w_sum_action * action_reward
+                        + self._w_sum_ball_vel * ball_velocity_reward
+                        + self._w_sum_contact * self._w_contact * contact_reward
+                        + self._w_sum_hold * self._w_hold * hold_reward)
+        # jax.debug.print("Total reward -> {} ", total_reward)
+
+        return total_reward, carry

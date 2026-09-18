@@ -98,6 +98,7 @@ class PPOAgentState(AgentStateBase):
             train_state.opt_state, d["train_state"]["opt_state"]
         )
         train_state = train_state.replace(opt_state=opt_state)
+        train_state = train_state.replace(step=d["train_state"]["step"])
         return cls(train_state)
 
 
@@ -190,18 +191,21 @@ class PPOJax(JaxRLAlgorithmBase):
             train_state = None
 
         if train_state is None:
-
             rng, _rng1, _rng2 = jax.random.split(rng, 3)
             init_x = jnp.zeros(env.info.observation_space.shape)
             network_params = network.init(_rng1, init_x)
+            train_state = TrainState.create(
+                apply_fn=network.apply,
+                params=network_params["params"],
+                run_stats=network_params["run_stats"],
+                tx=tx,
+            )
 
-        # init new train states from old params (or use loaded state when resuming)
-        train_state = TrainState.create(
-            apply_fn=network.apply,
-            params=network_params["params"] if train_state is None else train_state.params,
-            run_stats=network_params["run_stats"] if train_state is None else train_state.run_stats,
-            tx=tx,
-        )
+        # Keep the loaded policy fixed as a behavioral prior during fine-tuning.
+        # A fresh run has no pretrained policy to regularize toward.
+        reference_params = train_state.params if agent_state is not None else None
+        reference_run_stats = train_state.run_stats if agent_state is not None else None
+        kl_coef = getattr(config, "kl_coef", 0.0) if agent_state is not None else 0.0
 
         # INIT ENV
         rng, _rng = jax.random.split(rng)
@@ -296,6 +300,18 @@ class PPOJax(JaxRLAlgorithmBase):
                         pi, value = y
                         log_prob = pi.log_prob(traj_batch.action)
 
+                        # Apply KL regularization if a reference policy is provided
+                        if reference_params is not None:
+                            reference_y, _ = network.apply(
+                                {'params': reference_params, 'run_stats': reference_run_stats},
+                                traj_batch.obs,
+                                mutable=["run_stats"],
+                            )
+                            reference_pi, _ = reference_y
+                            policy_kl = pi.kl_divergence(reference_pi).mean()
+                        else:
+                            policy_kl = jnp.array(0.0)
+
                         # CALCULATE VALUE LOSS
                         value_pred_clipped = traj_batch.value + (
                             value - traj_batch.value
@@ -326,8 +342,9 @@ class PPOJax(JaxRLAlgorithmBase):
                             loss_actor
                             + config.vf_coef * value_loss
                             - config.ent_coef * entropy
+                            + kl_coef * policy_kl
                         )
-                        return total_loss, (value_loss, loss_actor, entropy)
+                        return total_loss, (value_loss, loss_actor, entropy, policy_kl)
 
                     grad_fn = jax.value_and_grad(_loss_fn, has_aux=True)
                     total_loss, grads = grad_fn(

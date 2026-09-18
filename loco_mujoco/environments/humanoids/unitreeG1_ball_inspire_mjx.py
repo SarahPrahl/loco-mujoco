@@ -44,4 +44,10 @@ class MjxUnitreeG1BallInspire(UnitreeG1BallInspire):
         for g_name in foot_geoms:
             spec.add_pair(geomname1="floor", geomname2=g_name)
 
+        for g_name in self.finger_geom_names:
+            spec.add_pair(geomname1="ball", geomname2=g_name)
+
+        for g_name in self.palm_geom_names:
+            spec.add_pair(geomname1="ball", geomname2=g_name)
+
         return spec

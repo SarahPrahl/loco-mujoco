@@ -736,7 +736,8 @@ class LocoEnv(Mjx):
 
     def _mjx_reset_carry(self, model: Model,
                          data: Data,
-                         carry: MjxAdditionalCarry) -> Tuple[Data, MjxAdditionalCarry]:
+                         carry: MjxAdditionalCarry,
+                         key=None) -> Tuple[Data, MjxAdditionalCarry]:
         """
         Resets the additional carry and allows modification to the Mujoco data.
 
@@ -755,7 +756,7 @@ class LocoEnv(Mjx):
                 if self.th is not None else (data, carry)
 
         # call parent to apply domain randomization and terrain
-        data, carry = super()._mjx_reset_carry(model, data, carry)
+        data, carry = super()._mjx_reset_carry(model, data, carry, key)
 
         return data, carry
 

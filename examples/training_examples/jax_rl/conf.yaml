@@ -1,4 +1,4 @@
-efaults:
+defaults:
   - override hydra/job_logging: default
   - override hydra/launcher: basic
 
@@ -17,47 +17,58 @@ efaults:
 #      experiment.env_params.env_name: MjxUnitreeH1.walk, MjxUnitreeH1.run
 
 wandb:
-  project: "unitreeGo2"
+  project: "unitreeG1InspireCatch"
 
 experiment:
   task_factory:
     name: RLFactory
     params: {}
+  # Pretrained policy path to continue training from. If None, will train from scratch.
+  policy:
+    path: /home/sarah/pg/mujoco/outputs/2026-09-05/15-17-05/PPOJax_saved.pkl
   env_params:
-    env_name: MjxUnitreeGo2
+    env_name: MjxUnitreeG1BallInspire
     horizon: 1000
+    nconmax: 7000
+    # overwrite the spec with the xml file that treats the ball as a free joint
+    spec: /home/sarah/pg/mujoco/robot_models_new/scene_inspire_hand_ball.xml
     terminal_state_type: HeightBasedTerminalStateHandler
-    goal_type: GoalRandomRootVelocity
+    # custom initial state handler, that generates random root positions and ball throws
+    init_state_type: CatchInitialStateHandler
+    goal_type: NoGoal # maybe add a Catch Goal
     goal_params:
-      visualize_goal: true
+      visualize_goal: false
     headless: true
-    reward_type: LocomotionReward
+    # use the custom CatchReward
+    reward_type: CatchReward
     reward_params:
-      tracking_w_exp_xy: 4.0
-      tracking_w_exp_yaw: 4.0
-      tracking_w_sum_xy: 2.0
-      tracking_w_sum_yaw: 1.0
-      air_time_coeff: 0.1
-      joint_acc_coeff: 2.0e-05
-      air_time_max: 0.5
-      joint_torque_coeff: 2.0e-07
-      joint_position_limit_coeff: 2.0
-      action_rate_coeff: 0.1
-      symmetry_air_coeff: 0.005
-      energy_coeff: 5.0e-05
+      palm_weight: 10.0
+      finger_weight: 2.0
+      root_vel_weight: 0.1
+      ball_vel_weight: 2.0
+      contact_weight: 2.0
+      hold_weight: 3.0
+      palm_sum: 1.0
+      finger_sum: 1.0
+      root_vel_sum: 0.5
+      ball_vel_sum: 1.0
+      contact_sum: 1.0
+      hold_sum: 1.0
   hidden_layers: [512, 256]
-  lr: 1e-4
-  num_envs: 2048
-  num_steps: 50
-  total_timesteps: 10e7
-  update_epochs: 4
+  lr: 1e-5
+  # KL penalty to keep resumed PPO close to the pretrained policy.
+  kl_coef: 0.01
+  num_envs: 1024
+  num_steps: 128
+  total_timesteps: 50e6
+  update_epochs: 2
   num_minibatches: 32
   gamma: 0.99
   gae_lambda: 0.95
-  clip_eps: 0.2
-  init_std: 0.8
+  clip_eps: 0.1
+  init_std: 0.2
   learnable_std: true
-  ent_coef: 0.0
+  ent_coef: 0.0001
   vf_coef: 0.5
   max_grad_norm: 0.5
   activation: tanh
@@ -68,7 +79,7 @@ experiment:
   n_seeds: 1  # while automatically take seeds from 1 to n_seeds
   vmap_across_seeds: true
   validation:
-    active: false
+    active: true
     num_steps: 100
     num_envs: 100
     num: 10 # set to 0 to disable validation
